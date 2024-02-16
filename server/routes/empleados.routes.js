@@ -6,6 +6,7 @@ router.post('/empleado', empleadoCtrl.createEmpleados);
 router.get('/empleado', empleadoCtrl.getEmpleados);
 router.get('/empleado/:id', empleadoCtrl.getUnEmpleado);
 router.patch('/empleado/:id', empleadoCtrl.actualizarEmpleado);
+router.delete('/empleado/:id', empleadoCtrl.deleteEmpleado);
 
 
 

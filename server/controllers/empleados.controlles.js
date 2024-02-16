@@ -78,6 +78,23 @@ empleadoCtrl.getUnEmpleado = async (req, res) => {
       res.status(500).json({ error: 'Error al actualizar el empleado', details: error.message });
     }
   }; 
+
+  //Metodo para eliminar empleado
+  empleadoCtrl.deleteEmpleado = async (req, res) => {
+    try {
+      const { id } = req.params
+      const empleado = await Empleado.findByIdAndDelete(id)
+
+      if(!empleado) {
+        return res.status(404).send('No se a encontrado el usuario')
+      }
+
+      res.send('El empleado a sido eliminado')
+    } catch (error) {
+      console.error(error)
+      res.status(500).send('Ups!!! parece que algo a ocurrido con el Servidor, verifique e intente nuevamente')
+    }
+  }
   
   
 
