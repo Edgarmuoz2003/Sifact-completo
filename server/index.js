@@ -13,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 app.use('/api', require('./routes/empleados.routes'));
+app.use('/api', require('./routes/login.routes'));
 
 
 

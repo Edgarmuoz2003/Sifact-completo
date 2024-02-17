@@ -1,4 +1,3 @@
-const empleado = require('../models/empleado');
 const Empleado = require('../models/empleado');
 const bcrypt = require('bcrypt');
 const empleadoCtrl = {};
