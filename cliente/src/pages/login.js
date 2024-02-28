@@ -3,12 +3,14 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import React, { useState } from 'react'; 
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min'; 
 import axios from 'axios';
+import '../css/estilos-login.css';
 
 const Login = ({ setAuthenticated, setToken, setNombre }) => {
   // Crear estados locales
   const history = useHistory();
   const [documento, setDocumento] = useState('');
   const [contrasenia, setContrasenia] = useState('');
+  const [error, setError] = useState('');
 
   // Método para autenticarse
   const auth = async () => {
@@ -18,23 +20,31 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
         contrasenia: contrasenia
       });
 
-      // Extraer token y nombre de la respuesta
-      const { token, nombre } = response.data;
+      if (response.data.token && response.data.nombre) {
+        setAuthenticated(true);
+        setToken(response.data.token);
+        setNombre(response.data.nombre);
 
-      // Actualizar estados pasados como propiedades
-      setAuthenticated(true);
-      setToken(token);
-      setNombre(nombre);
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('nombre', response.data.nombre);
 
-      // Redirigir a la página de inicio
-      history.push('/home');
+
+        history.push('/home');
+      } else {
+        setError('Credenciales incorrectas');
+      }
     } catch (error) {
-      console.log(error);
+      if (error.response && error.response.status === 401) {
+        setError('Credenciales incorrectas');
+      } else {
+        setError('Error al autenticar. Por favor, inténtalo de nuevo.');
+      }
     }
   };
 
+
   return (
-    <div className="container">
+    <div className="container contenedor-login">
       <div className="card text-center">
         <div className="card-header">Iniciar sesión</div>
         <div className="card-body">
@@ -57,6 +67,11 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
         <div className="card-footer text-body-secondary">
           <button className="btn btn-success" onClick={auth}>Ingresar</button> 
         </div>
+        {error && (
+          <div className="alert alert-danger mt-3" role="alert">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );

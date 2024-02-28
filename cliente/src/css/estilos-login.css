@@ -1,0 +1,25 @@
+body{
+    background-color: rgb(73, 99, 245);
+}
+
+.contenedor-login{
+    max-width: 300px;
+    margin-top: 10rem; 
+    
+}
+
+.card-header{
+    background-color: black;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: white;
+}
+
+label{
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.card-footer button{
+    width: 100%;
+}

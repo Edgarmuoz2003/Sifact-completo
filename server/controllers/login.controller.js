@@ -16,12 +16,22 @@ loginCtrl.login = async (req, res) => {
             const { nombre } = empleado;
             res.status(200).json({ token, nombre })
         }else{
-            res.status(401).send('Credenciales Incorrectas')
+            res.json({ message: 'Credenciales Incorrectas' })
         }
     } catch (error) {
         console.error(error);
         res.status(500).send('Error en el Servidor');
     }
 }
+
+loginCtrl.logout = (req, res) => {
+    try {
+        console.log('Solicitud de logout recibida');
+        res.status(200).json({ message: 'La sesión se ha cerrado exitosamente' });
+    } catch (error) {
+        console.error('Error en el controlador de logout:', error);
+        res.status(500).json({ error: 'Error en el Servidor' });
+    }
+};
 
 module.exports = loginCtrl; 
