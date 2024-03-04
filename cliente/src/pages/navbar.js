@@ -32,7 +32,7 @@ function Navbar({ nombre, setAuthenticated, setToken, setNombre }) {
     <div className="Home">
       <nav className="navbar navbar-expand-lg bg-body-tertiary">
         <div className="container-fluid">
-          <a className="navbar-brand" href="/">Facturacion</a>
+          <a className="navbar-brand" href="/facturacion">Facturacion</a>
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>
@@ -45,10 +45,13 @@ function Navbar({ nombre, setAuthenticated, setToken, setNombre }) {
                 <a className="nav-link active" aria-current="page" href="/clientes">Clientes</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/">Productos</a>
+                <a className="nav-link" href="/productos">Productos</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/">Configuraciones</a>
+                <a className="nav-link" href="/empleados">Empleados</a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link" href="/configuraciones">Configuraciones</a>
               </li>
             </ul>
             <div className="navbar-brand ms-auto ">

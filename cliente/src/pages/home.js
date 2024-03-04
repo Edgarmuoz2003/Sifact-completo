@@ -10,7 +10,7 @@ function Home({ nombre }) {
           <div className="row">
             <div className="col-12 col-md-6 col-lg-4">
               <div className="menu">
-                <a href="/"><img src="facturacion.png" alt="logo facturacion" /></a> 
+                <a href="/facturacion"><img src="facturacion.png" alt="logo facturacion" /></a> 
               </div>
               <div className="overlay">
                 <p>Facturacion</p>
@@ -19,19 +19,25 @@ function Home({ nombre }) {
 
             <div className="col-12 col-md-6 col-lg-4">
               <div className="menu">
-              <a href="/clientes"><img src="cliente.png" alt="logo facturacion" /></a>
+              <a href="/clientes"><img src="cliente.png" alt="logo clientes" /></a>
               </div>
             </div>
 
             <div className="col-12 col-md-6 col-lg-4">
               <div className="menu">
-              <a href="/"><img src="productos.png" alt="logo facturacion" /></a>
+              <a href="/productos"><img src="productos.png" alt="logo productos" /></a>
               </div>
             </div>
 
             <div className="col-12 col-md-6 col-lg-4">
               <div className="menu">
-              <a href="/"><img src="configuraciones.png" alt="logo facturacion" /></a>
+              <a href="/empleados"><img src="empleado.png" alt="logo empleados" /></a>
+              </div>
+            </div>
+
+            <div className="col-12 col-md-6 col-lg-4">
+              <div className="menu">
+              <a href="/configuraciones"><img src="configuraciones.png" alt="logo configuraciones" /></a>
               </div>
             </div>
           </div>

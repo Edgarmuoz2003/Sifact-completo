@@ -4,6 +4,10 @@ import Home from './pages/home';
 import Login from './pages/login';
 import Navbar from './pages/navbar';
 import Clientes from './pages/clientes';
+import Productos from './pages/productos';
+import Facturacion from './pages/facturacion';
+import Configuraciones from './pages/configuraciones';
+import Empleados from './pages/empleados';
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -43,6 +47,34 @@ function App() {
           <>
             <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
             <Clientes nombre={nombre} />
+          </>
+        </Route>
+
+        <Route path="/productos">
+          <>
+            <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+            <Productos nombre={nombre} />
+          </>
+        </Route>
+
+        <Route path="/facturacion">
+          <>
+            <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+            <Facturacion nombre={nombre} />
+          </>
+        </Route>
+
+        <Route path="/configuraciones">
+          <>
+            <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+            <Configuraciones nombre={nombre} />
+          </>
+        </Route>
+
+        <Route path="/empleados">
+          <>
+            <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+            <Empleados nombre={nombre} />
           </>
         </Route>
 

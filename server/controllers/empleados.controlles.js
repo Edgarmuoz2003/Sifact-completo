@@ -36,17 +36,22 @@ empleadoCtrl.createEmpleados = async (req, res) => {
 //metodo para consultar los empleados registrados en la base de datos
 
 empleadoCtrl.getEmpleados = async(req, res) => {
-    const empleados = await Empleado.find({}, 'documento nombre cargo -_id contrasenia');
+    const empleados = await Empleado.find({}, 'documento nombre cargo _id contrasenia');
     res.json(empleados)
 }
 
 //metodo para consultar un empleado especifico
-//parque funcione el id deve mandarse en la ruta, no como query parameter
+//parque funcione el documento debe mandarse en la ruta, no como query parameter
 empleadoCtrl.getUnEmpleado = async (req, res) => {
+  const documento  = req.params.documento;
+  
     try {
-      const { id } = req.params;//recuperamos el id de los parametros
-      const unEmpleado = await Empleado.findById(id).select('documento nombre cargo -_id');//seleccionamos los campos que queremos que se vean y excluimos el id que
-      res.json(unEmpleado);                                                                //aparece por defecto
+      const unEmpleado = await Empleado.findOne({ documento: documento }).select('documento nombre cargo _id');
+
+      if(!unEmpleado){
+        return res.status(404).json({ error: 'Empleado no encontrado' });
+      }
+      res.json(unEmpleado);                                                                
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Error al obtener el empleado', details: error.message });
