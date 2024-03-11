@@ -1,0 +1,14 @@
+.config{
+    margin-top: 5rem;
+}
+
+.config-button button{
+    width: 100%;
+    padding: 1.2rem;
+    margin: 5px;
+    font-weight:bold;
+}
+
+form button{
+    margin: 10px;
+}
