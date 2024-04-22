@@ -47,3 +47,26 @@
   .menu:hover .overlay {
     opacity: 0.7; /* Puedes ajustar este valor según tu preferencia */
   }
+
+  .imptProd{
+    width: 400px;
+    height: 40px;
+    border-radius: 20px;
+  }
+
+  .contenedorBuscar{
+    display: flex
+  }
+
+  .inpuClien{
+    width: 400px;
+    height: 40px;
+    border-radius: 20px;
+
+  }
+  
+  .cliente{
+    display: flex;
+    
+
+  }

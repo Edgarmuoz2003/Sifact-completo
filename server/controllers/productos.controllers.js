@@ -3,14 +3,15 @@ const productoCtrl = {};
 
 //metodo para crear nuevos productos
 productoCtrl.createProductos = async(req, res) => {
-    const { codigo, descripcion, precio, impuesto } = req.body
+    const { codigo, descripcion, precio, impuesto, cantidad } = req.body
 
     try {
         const producto = new Producto({
             codigo,
             descripcion,
             precio,
-            impuesto
+            impuesto,
+            cantidad
         })
 
         await producto.save()
@@ -20,23 +21,52 @@ productoCtrl.createProductos = async(req, res) => {
     }
 }
 
-//metodo para consultar productos 
-productoCtrl.getProducto = async(req, res) => {
-    const { descripcion } = req.params
+// //metodo para consultar productos 
+// productoCtrl.getProducto = async(req, res) => {
+//     const { descripcion } = req.params
+
+//     try {
+//         const expresion = new RegExp(descripcion, 'i')
+//         const response = await Producto.find({ descripcion: expresion });
+
+//         if(response.length === 0) {
+//             return res.status(404).json({ message: 'NO se hayó ningun producto con esa descripcion' })
+//         }
+//         res.json(response)
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Error al obtener los productos', details: error.message });
+//     }
+// }
+
+productoCtrl.getProducto = async (req, res) => {
+    const { descripcion } = req.params;
+    const { codigo } = req.query; // Obtener el código desde los parámetros de consulta
 
     try {
-        const expresion = new RegExp(descripcion, 'i')
-        const response = await Producto.find({ descripcion: expresion });
+        let query = { descripcion: new RegExp(descripcion, 'i') };
 
-        if(response.length === 0) {
-            return res.status(404).json({ message: 'NO se hayó ningun producto con esa descripcion' })
+        if (codigo) {
+            query = {
+                $or: [
+                    { descripcion: new RegExp(descripcion, 'i') },
+                    { codigo: codigo }
+                ]
+            };
         }
-        res.json(response)
+
+        const response = await Producto.find(query);
+
+        if (response.length === 0) {
+            return res.status(404).json({ message: 'No se encontró ningún producto con esa descripción o código.' });
+        }
+
+        res.json(response);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error al obtener los productos', details: error.message });
     }
-}
+};
 
 //metodo para consultar todos los productos
 productoCtrl.getProductos = async(req, res) => {
@@ -57,7 +87,8 @@ productoCtrl.updateProductos = async(req, res) => {
         codigo: req.body.codigo,
         descripcion: req.body.descripcion,
         precio: req.body.precio,
-        impuesto: req.body.impuesto
+        impuesto: req.body.impuesto,
+        cantidad: req.body.cantidad
     }
 
     try {
@@ -89,5 +120,7 @@ productoCtrl.deleteProducto = async(req, res) => {
         res.status(500).json({ error: 'Error al intentar eliminar el producto', details: error.message });
     }
 }
+
+
 
 module.exports = productoCtrl; 

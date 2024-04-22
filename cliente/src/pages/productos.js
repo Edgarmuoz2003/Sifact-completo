@@ -11,6 +11,7 @@ function Productos() {
   const [id, setId] = useState("")
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState();
+  const [cantidad, setCantidad] = useState();
   const [impuesto, setImpuesto] = useState();
   const [productos, setProductos] = useState([])
   const [editar, setEditar] = useState(false);
@@ -24,7 +25,8 @@ function Productos() {
         codigo: codigo,
         descripcion: descripcion,
         precio: precio,
-        impuesto: impuesto
+        impuesto: impuesto,
+        cantidad: cantidad
       });
       await limpiarCampos();
       Swal.fire({
@@ -40,19 +42,45 @@ function Productos() {
   };
 
   //metodo para buscar un cliente
-  const buscarProducto = async () => {
+  // const buscarProducto = async () => {
+  //   try {
+  //     const response = await axios.get(`http://localhost:3000/api/producto/${descripcion}`);
+  //     setProductos(response.data);
+  //     limpiarCampos()
+  //   } catch (error) {
+  //     console.error("Error al buscar el producto:", error);
+      
+  //     if (error.response && error.response.status === 404) {
+  //       // Mostrar SweetAlert para indicar que el cliente no fue encontrado
+  //       Swal.fire({
+  //         title: "Producto no encontrado",
+  //         text: "No se encontró ningún Producto con esa descripción.",
+  //         icon: "error",
+  //         timer: 3000
+  //       });
+  //     }
+  //   }
+  // };
+
+  const buscarProducto = async (descripcion, codigo) => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/producto/${descripcion}`);
+      let url = `http://localhost:3000/api/producto/${descripcion}`;
+  
+      if (codigo) {
+        url += `?codigo=${codigo}`;
+      }
+  
+      const response = await axios.get(url);
       setProductos(response.data);
-      limpiarCampos()
+      limpiarCampos();
     } catch (error) {
       console.error("Error al buscar el producto:", error);
-      
+  
       if (error.response && error.response.status === 404) {
-        // Mostrar SweetAlert para indicar que el cliente no fue encontrado
+        // Mostrar SweetAlert para indicar que el producto no fue encontrado
         Swal.fire({
           title: "Producto no encontrado",
-          text: "No se encontró ningún Producto con esa descripción.",
+          text: "No se encontró ningún producto con esa descripción o código.",
           icon: "error",
           timer: 3000
         });
@@ -69,7 +97,8 @@ function Productos() {
       codigo: codigo,
       descripcion: descripcion,
       precio: precio,
-      impuesto: impuesto
+      impuesto: impuesto,
+      cantidad: cantidad
     });
     await limpiarCampos();
     setProductos("");
@@ -123,6 +152,7 @@ function Productos() {
     setDescripcion("");
     setPrecio("");
     setImpuesto("");
+    setCantidad("");
     setEditar(false);
   }
 
@@ -133,6 +163,7 @@ function Productos() {
     setDescripcion(producto.descripcion);
     setPrecio(producto.precio);
     setImpuesto(producto.impuesto);
+    setCantidad(producto.cantidad);
     setId(producto._id);
 
   }
@@ -225,6 +256,22 @@ function Productos() {
                 />
               </div>
 
+              <div className="input-group mb-3">
+                <span className="input-group-text" id="basic-addon1">cantidad</span>
+                <input
+                  onChange={(event) => {
+                    setCantidad(event.target.value);
+                  }}
+                  type="number"
+                  className="form-control"
+                  value={cantidad}
+                  placeholder="Ingrese el % de impuesto segun la ley vigente"
+                  aria-label="impuesto"
+                  aria-describedby="basic-addon1"
+                  required
+                />
+              </div>
+
               <button type="submit" className="btn btn-primary" onClick={add}>Agregar</button>
             </form>
           </div>
@@ -296,6 +343,22 @@ function Productos() {
                   required
                 />
               </div>
+
+              <div className="input-group mb-3">
+                <span className="input-group-text" id="basic-addon1">cantidad</span>
+                <input
+                  onChange={(event) => {
+                    setCantidad(event.target.value);
+                  }}
+                  type="number"
+                  className="form-control"
+                  value={cantidad}
+                  placeholder="Ingrese el % de impuesto segun la ley vigente"
+                  aria-label="impuesto"
+                  aria-describedby="basic-addon1"
+                  required
+                />
+              </div>
               <button type="button" className="btn btn-primary" onClick={update}>
                 Guardar Cambios
               </button>
@@ -316,6 +379,7 @@ function Productos() {
                         <th>Descripcion</th>
                         <th>Precio de venta</th>
                         <th>% de Impuesto</th>
+                        <th>cantidad</th>
                         <th>Acciones</th>
                         
                       </tr>
@@ -327,6 +391,7 @@ function Productos() {
                         <td>{productos.descripcion}</td>
                         <td>{productos.precio}</td>
                         <td>{productos.impuesto}</td>
+                        <td>{productos.cantidad}</td>
                         <td>
                           <div className="btn-group" role="group" aria-label="Basic mixed styles example">
                             <button type="button" className="btn btn-info" onClick={(event) => {
