@@ -29,14 +29,17 @@ function Facturacion() {
         setCliente({
           nombre: clienteEncontrado.nombre,
           direccion: clienteEncontrado.direccion,
-          telefono: clienteEncontrado.telefono
+          telefono: clienteEncontrado.telefono,
+          // Almacenar solo el ObjectId del cliente
+          _id: clienteEncontrado._id
         });
       } else {
         // Si no se encuentra ningún cliente con el NIT especificado, limpiar el estado del cliente
         setCliente({
           nombre: "",
           direccion: "",
-          telefono: ""
+          telefono: "",
+          _id: "" // Limpiar el ObjectId del cliente
         });
         console.log("Cliente no encontrado");
         // Puedes mostrar una alerta al usuario u otra acción
@@ -86,43 +89,122 @@ function Facturacion() {
 
 
   const handleCantidadChange = (index, cantidad) => {
-    const updatedProductos = [...productosSeleccionados];
+    const updatedProductos = [...productosSeleccionados];    
     if (index >= 0 && index < updatedProductos.length) {
-      updatedProductos[index].cantidad = cantidad;
-      const total = updatedProductos[index].precio * cantidad;
-      updatedProductos[index].total = total;
+      const producto = updatedProductos[index];      
+      // Actualizar la cantidad del producto
+      producto.cantidad = cantidad;  
+      // Calcular el IVA
+      const impuesto = producto.impuesto / 100;
+      const iva = producto.precio * impuesto * cantidad;
+      producto.iva = iva;  
+      // Calcular el total (precio por cantidad + IVA)
+      const total = producto.precio * cantidad ;
+      producto.total = total;
+      // Actualizar el estado de productos seleccionados
       setProductosSeleccionados(updatedProductos);
     }
   };
+  
 
     // Calcular el total de la factura
     const totalFactura = productosSeleccionados.reduce((total, producto) => {
       return total + (producto.total || 0);
     }, 0);
-  
+
+      // Calcular el total del IVA para la factura
+    const totalIVA = productosSeleccionados.reduce((total, producto) => {
+      // Sumar el IVA de cada producto
+      return total + (producto.iva || 0);
+    }, 0);  
+     
+
+    const precioBruto = totalFactura - totalIVA;
+
+
+
+    useEffect(() => {
+      // Función para obtener la fecha actual en formato YYYY-MM-DD
+      const getCurrentDate = () => {
+        const now = new Date();
+        const formattedDate = now.toISOString().split('T')[0];
+        return formattedDate;
+      };
+
+    // Establecer la fecha actual al cargar el componente
+    setFecha(getCurrentDate());
+    }, []); // Ejecutar solo una vez al montar el componente
+    
+    const [ultimoNumeroFacturaEncontrado, setUltimoNumeroFacturaEncontrado] = useState();
+    const [fecha, setFecha] = useState('');
+    
+    
+
+  useEffect(() => {
+    const getCurrentDate = () => {
+      const now = new Date();
+      const formattedDate = now.toISOString().split('T')[0];
+      return formattedDate;
+    };
+
+    const fetchLastFoundFacturaNumber = async () => {
+      let nextNumber = 1;
+
+      while (true) {
+        try {
+          const response = await axios.get(`http://localhost:3000/api/factura/${nextNumber}`);
+
+          if (response.data) {
+            nextNumber++;
+          } else {
+            // Cuando se encuentra un número no utilizado, establecerlo como el último encontrado
+            setUltimoNumeroFacturaEncontrado(nextNumber);
+           
+            break;
+          }
+        } catch (error) {
+          console.error("Error al verificar el número de factura:", error);
+          break;
+        }
+      }
+    };
+
+    setFecha(getCurrentDate());
+    fetchLastFoundFacturaNumber();
+  }, []); // Ejecutar solo una vez al montar el componente
+
+
 
     const generarFactura = async () => {
       try {
+
+        // Lógica para generar la factura y obtener el próximo número
+        const numeroFactura = ultimoNumeroFacturaEncontrado + 1; // Siguiente número de factura
+        // Obtener el ObjectId del cliente
+        const clienteId = cliente._id;
+
         // Obtener los productos seleccionados y los detalles del cliente
         const productosParaFactura = productosSeleccionados.map((producto) => ({
           codigo: producto.codigo,
           descripcion: producto.descripcion,
           precio: producto.precio,
-          cantidad: producto.cantidad
+          cantidad: producto.cantidad,
+          iva: producto.iva, 
         }));
-    
-        const clienteParaFactura = {
-          
-          nombre: cliente.nombre,
-          direccion: cliente.direccion,
-          telefono: cliente.telefono
-        };
+
+        
+
     
         // Realizar la solicitud POST para guardar la factura en el servidor
         const response = await axios.post('http://localhost:3000/api/factura', {
           productos: productosParaFactura,
-          cliente: clienteParaFactura
+          cliente: clienteId,
+          totalNeto: totalFactura,
+          numeroFactura: numeroFactura,
+          
         });
+
+        setUltimoNumeroFacturaEncontrado(numeroFactura);
     
         console.log("Factura generada:", response.data);
         
@@ -148,6 +230,25 @@ function Facturacion() {
   return (
     <div className="container">
       <h1>Interfaz de Facturación</h1>
+
+      <div>
+        <div className="contenedorBuscar">
+          <label>N° factura</label>
+          <input
+            type="number"
+            value={ultimoNumeroFacturaEncontrado  }
+            onChange={(e) => setUltimoNumeroFacturaEncontrado(parseInt(e.target.value))}
+            disabled
+          />
+          <label>fecha</label>
+          <input
+            type="date"
+            value={fecha}
+            onChange={(e) => setFecha(e.target.value)}
+            disabled/>
+            
+        </div>
+      </div>
 
       <div className="my-4">
         <div className="contenedorBuscar">
@@ -264,6 +365,7 @@ function Facturacion() {
               <th>Descripción</th>
               <th>Cantidad</th>
               <th>Precio Unitario</th>
+              <th>iva</th>
               <th>Total</th>
               <th></th>
             </tr>
@@ -282,6 +384,7 @@ function Facturacion() {
                   />
                 </td>
                 <td>${producto.precio}</td>
+                <td>{producto.iva}</td>
                 <td>${producto.total}</td>
                 <td>
                   <button
@@ -296,9 +399,10 @@ function Facturacion() {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan="4"><strong>Total de la Factura:</strong></td>
-              <td>${totalFactura.toFixed(2)}</td>
-              <td></td>
+              <td colSpan="4"><strong>Total de la Factura:</strong></td>              
+              <td>total bruto {precioBruto.toFixed(2)}</td>
+              <td>total iva{totalIVA.toFixed(2)}</td>
+              <td>valor neto ${totalFactura.toFixed(2)}</td>
             </tr>
           </tfoot>
         </table>

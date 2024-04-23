@@ -70,3 +70,8 @@
     
 
   }
+
+  tfoot tr td {
+    font-weight: 800;
+    font-size: 20px;
+  }

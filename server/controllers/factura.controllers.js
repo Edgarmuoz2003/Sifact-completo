@@ -2,44 +2,81 @@ const Factura = require('../models/factura');
 
 const facturaCtrl = {};
 
-facturaCtrl.createFactura = async (req, res) => {
-  // Extraer los datos necesarios del cuerpo de la solicitud
-  const {
-    
-    nombre,
-    direccion,
-    telefono,
-    codigo,
-    descripcion,
-    precio,
-    
-    cantidad
-  } = req.body;
 
+facturaCtrl.createFactura = async (req, res) => {
   try {
-    // Crear una nueva instancia del modelo Factura con los datos recibidos
+    // Extraer datos de la solicitud (body, parámetros, etc.)
+    const { numeroFactura, cliente, fecha, detalle, totalNeto } = req.body;
+
+    // Crear una nueva instancia de factura utilizando el modelo de Mongoose
     const nuevaFactura = new Factura({
-      
-      nombre,
-      direccion,
-      telefono,
-      codigo,
-      descripcion,
-      precio,
-     
-      cantidad
+      numeroFactura,
+      cliente,
+      fecha,
+      detalle,
+      totalNeto
     });
 
     // Guardar la nueva factura en la base de datos
-    await nuevaFactura.save();
+    const facturaGuardada = await nuevaFactura.save();
 
-    // Enviar una respuesta de éxito al cliente
-    res.status(201).json({ message: 'Factura creada exitosamente', factura: nuevaFactura });
+    // Devolver una respuesta de éxito
+    res.status(201).json({ mensaje: 'Factura guardada correctamente', factura: facturaGuardada });
   } catch (error) {
-    // Manejar cualquier error ocurrido durante la creación o guardado de la factura
-    console.error('Error al intentar guardar la factura:', error);
-    res.status(500).json({ message: 'Error al intentar guardar la factura', error: error.message });
+    // Manejar errores
+    console.error('Error al guardar la factura:', error);
+    res.status(500).json({ mensaje: 'Error al guardar la factura', error: error.message });
   }
 };
 
+
+// Obtener todas las facturas
+facturaCtrl.getTodasLasFacturas = async (req, res) => {
+  try {
+    // Consultar todos los documentos de la colección 'Factura'
+    const facturas = await Factura.find();
+
+    // Verificar si se encontraron facturas
+    if (!facturas || facturas.length === 0) {
+      return res.status(404).json({ mensaje: 'No se encontraron facturas' });
+    }
+
+    // Devolver las facturas encontradas en la respuesta
+    res.status(200).json({ facturas });
+  } catch (error) {
+    console.error('Error al obtener todas las facturas:', error);
+    res.status(500).json({ mensaje: 'Error al obtener todas las facturas', error: error.message });
+  }
+};
+
+// Obtener una factura por número de factura
+facturaCtrl.getFacturaByNumero = async (req, res) => {
+  try {
+    const { numeroFactura } = req.params;
+    
+    // Convertir el número de factura a tipo número
+    const numeroFacturaNumero = parseInt(numeroFactura);
+
+    // Buscar la factura por su número en la base de datos
+    const facturaEncontrada = await Factura.findOne({ numeroFactura: numeroFacturaNumero });
+
+    // Verificar si se encontró la factura
+    if (!facturaEncontrada) {
+      return res.status(404).json({ mensaje: `Factura con número ${numeroFactura} no encontrada` });
+    }
+
+    // Devolver la factura encontrada en la respuesta
+    res.status(200).json({ factura: facturaEncontrada });
+  } catch (error) {
+    console.error('Error al buscar la factura por número:', error);
+    res.status(500).json({ mensaje: 'Error al buscar la factura por número', error: error.message });
+  }
+};
+
+
+
+
+
 module.exports = facturaCtrl;
+
+
