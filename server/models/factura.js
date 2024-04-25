@@ -9,7 +9,7 @@ const DetalleFacturaSchema = new Schema({
     cantidad: { type: Number, required: true },
     precioUnidad: { type: Number, required: true },
     iva: { type: Number, required: true },
-    subTotal: { type: Number, required: true }
+    
 });
 
 const FacturaSchema = new Schema({
@@ -20,7 +20,8 @@ const FacturaSchema = new Schema({
     },
     fecha: { type: Date, default: Date.now, required: true },
     detalle: [DetalleFacturaSchema],
-    totalNeto: { type: Number, required: true }
+    totalNeto: { type: Number, required: true },
+    //subTotal: { type: Number, required: true },
 });
 
 
