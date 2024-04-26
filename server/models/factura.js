@@ -6,6 +6,8 @@ const DetalleFacturaSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'producto'
     },
+    codigo: {type: String, required:true},
+    descripcion: { type: String, required: true},
     cantidad: { type: Number, required: true },
     precioUnidad: { type: Number, required: true },
     iva: { type: Number, required: true },
@@ -13,7 +15,7 @@ const DetalleFacturaSchema = new Schema({
 });
 
 const FacturaSchema = new Schema({
-    numeroFactura: { type: Number, required: true, unique: true },
+    numeroFactura: { type: String, required: true, unique: true },
     cliente: {
         type: Schema.Types.ObjectId,
         ref: 'cliente'

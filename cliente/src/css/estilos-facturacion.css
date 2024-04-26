@@ -1,0 +1,121 @@
+.containerPrincipal{
+    width: 1000px;
+    height: auto;
+    background-color: aliceblue;
+    align-content: center;
+    align-items: center;
+    margin: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.containerPrincipal h1 {
+    text-align: center;
+}
+
+.numFactura{
+    display: flex;
+    margin-left: 10px;
+}
+
+.numFactura div {
+    margin: 10px;
+}
+
+.secDatosCliente{
+    border: 3px solid;
+    margin: 10px;
+  
+}
+
+.secDatosCliente h2 {
+    text-align: center;
+}
+
+.buscarCliente{
+    width: 70%;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.inputClienteID{
+    margin-left: 15px;
+    margin-right: 15px;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--bs-body-color);    
+    background-color: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.contenedorCliente{
+    display: flex;
+    padding: 10px;
+
+}
+
+.lableCliente{
+    display: block;
+    margin-left: 15px;
+}
+
+.inputCliente{
+    margin-left: 15px;
+    margin-right: 15px;
+    padding: .375rem .75rem;
+    width: 280px;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--bs-body-color);    
+    background-color: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.busquedaProductos{
+    border: 3px solid;
+    margin: 10px;
+    padding: 10px;
+}
+
+.busquedaProductos h2{
+    text-align: center;
+}
+
+.contenedorResultadosProductos h2{
+    text-align: center;
+}
+
+.productosSelec{
+    border: 3px solid;
+    margin: 10px;
+    padding: 10px;
+}
+
+table {
+    width: 97%;
+    margin: auto;    
+    border: 1px solid black;
+    padding: 10px;
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 10px;
+    width: auto;
+}
+
+th {
+    background-color: lightgray;
+}
+
+.btnGenerar{
+    margin: 15px;
+}
