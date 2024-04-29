@@ -443,9 +443,9 @@ function Facturacion({ nombre }) {
           <tfoot>
             <tr>
               <td colSpan="4"><strong>Total de la Factura:</strong></td>              
-              <td>total bruto {precioBruto.toFixed(2)}</td>
-              <td>total iva{totalIVA.toFixed(2)}</td>
-              <td>valor neto ${totalFactura.toFixed(2)}</td>
+              <td>total bruto: {precioBruto.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+              <td>total iva: {totalIVA.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+              <td>valor neto: {totalFactura.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
             </tr>
           </tfoot>          
         </table>
