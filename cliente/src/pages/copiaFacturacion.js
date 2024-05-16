@@ -133,7 +133,7 @@ function Facturacion({ nombre }) {
     }
   }
 
-  //SECCION DE DETALLES DE PRODUCTOS 
+  //SECCION DE DETALLES DE PRODUCTOS
 
   const mCambiosCan = (event) => {
     setCantidad(event.target.value)
@@ -249,124 +249,77 @@ function Facturacion({ nombre }) {
     setTotalFactura(0);
   };
 
-//GENERAR EL PDF DE LA FACTURA
-const generarPDF = async () => {
-  try {
-    // Crear el documento PDF
-    const doc = new jsPDF();
-
-    doc.setFontSize(12); // Aumentar el tamaño del texto
-
-    // Agregar recuadro de fondo azul alrededor de todos los títulos
-    doc.setFillColor(0, 51, 102); // Azul oscuro
-    doc.setTextColor(255); // Blanco
-    doc.rect(10, 10, 190, 10, 'F'); // Rectángulo para "FACTURA DE VENTA"
-    doc.rect(10, 53, 190, 10, 'F'); // Rectángulo para "DATOS DEL CLIENTE"
-    doc.rect(10, 88, 190, 10, 'F'); // Rectángulo para "DETALLES Y CONCEPTOS"
-
-    // Agregar texto "FACTURA DE VENTA" en azul
-    doc.setTextColor(255); // Blanco
-    doc.text("FACTURA DE VENTA", 85, 18); // Ajustar la posición del texto
-
-    // Agregar los datos del almacén (empresa) en azul
-    doc.setTextColor(0, 51, 102); // Azul oscuro
-    doc.text(empresa.nombre, 20, 30);
-    doc.text(`NIT: ${empresa.nit}`, 20, 35);
-    doc.text(`Dirección: ${empresa.direccion}`, 20, 40);
-    doc.text(`Teléfono: ${empresa.telefono}`, 20, 45);
-
-    // Agregar número de factura y fecha en azul
-    doc.setTextColor(0)
-    doc.text(`Número de Factura: ${numActual}`, 130, 30);
-    doc.text(`Fecha: ${fecha}`, 130, 38);
-
-    // Agregar datos del cliente
-    doc.setTextColor(255); // Negro
-    doc.text("DATOS DEL CLIENTE", 85, 60);
-    doc.setTextColor(0)
-    doc.text(`NIT: ${cliente ? cliente.nit : ""}`, 20, 70);
-    doc.text(`Nombre: ${cliente ? cliente.nombre : ""}`, 20, 75);
-    doc.text(`Dirección: ${cliente ? cliente.direccion : ""}`, 20, 80);
-    doc.text(`Teléfono: ${cliente ? cliente.telefono : ""}`, 20, 85);
-
-    // Agregar sección de detalles y conceptos
-    doc.setTextColor(255); // Blanco
-    doc.text("Descripción", 15, 95);
-    doc.text("Cantidad", 100, 95);
-    doc.text("Precio X und", 120, 95);
-    doc.text("Total", 180, 95);
-    doc.setTextColor(0); // Negro
-    let y = 105; // Variable para controlar la posición en y
-     let totalIVA = 0;
-    productosFacturados.forEach((producto, index) => {
-      doc.text(`${producto.descripcion}`, 15, y);
-      doc.text(`${producto.cantidad}`, 100, y);
-      doc.text(`${producto.precioUnitario}`, 130, y);
-      doc.text(`${producto.total}`, 180, y);
-      totalIVA += producto.iva;
-      y += 10; // Incrementar la posición en y para el próximo producto
-    });
-
-     //recta del final de productos
-    doc.setDrawColor(0, 51, 102);
-    doc.setLineWidth(0.5);
-    doc.line(10, 225, 200, 225);
-
-    // Obtener el total de la factura
-    const totalFactura = productosFacturados.reduce((total, producto) => total + producto.total, 0);
-    const subtotal = totalFactura - totalIVA;
-    doc.rect(145, 235, 50, 10);
-    doc.text(`Subtotal: $${subtotal.toFixed(0)}`, 150, 240);
-
-    doc.rect(145, 245, 50, 10);
-    doc.text(`Total IVA: $${totalIVA.toFixed(0)}`, 150, 250);
-
-    doc.rect(145, 255, 50, 10);
-    doc.text(`Total Factura: $${totalFactura.toFixed(0)}`, 150, 260);
-
-// Agregar mensajes adicionales obtenidos mediante consulta Axios
-    const mensajesAdicionales = await obtenerMensajesAdicionales();
-
-    doc.text(mensajesAdicionales.mensaje1, 15, 240);
-    doc.text(mensajesAdicionales.mensaje2, 15, 250);
-    doc.text(mensajesAdicionales.mensaje3, 15, 260)
-
-    //recta del final
-    doc.setLineWidth(0.5);
-    doc.line(10, 285, 200, 285);
-
-    //mensaje final
-    doc.text(mensajesAdicionales.mensaje4, 85, 290);
-
-    // Guardar el PDF con el número de factura como nombre del archivo
-    doc.save(`${numActual}.pdf`);
-
-  } catch (error) {
-    console.error('Error al generar el PDF:', error);
-  }
-};
-
-
-
+  const generarPDF = async () => {
+    try {
+      // Crear el documento PDF
+      const doc = new jsPDF();
   
-const obtenerMensajesAdicionales = async () => {
-  try {
+      // Agregar los datos del almacén (empresa)
+      doc.text(empresa.nombre, 15, 15);
+      doc.text(`NIT: ${empresa.nit}`, 15, 25);
+      doc.text(`Dirección: ${empresa.direccion}`, 15, 35);
+      doc.text(`Teléfono: ${empresa.telefono}`, 15, 45);
+  
+      // Agregar número de factura y fecha
+      doc.text(`Número de Factura: ${numActual}`, 150, 15);
+      doc.text(`Fecha: ${fecha}`, 150, 25);
+  
+      // Agregar datos del cliente
+      doc.text("DATOS DEL CLIENTE", 15, 65);
+      doc.text(`NIT: ${cliente ? cliente.nit : ""}`, 15, 75);
+      doc.text(`Nombre: ${cliente ? cliente.nombre : ""}`, 15, 85);
+      doc.text(`Dirección: ${cliente ? cliente.direccion : ""}`, 15, 95);
+      doc.text(`Teléfono: ${cliente ? cliente.telefono : ""}`, 15, 105);
+  
+      // Agregar sección de detalles y conceptos
+      doc.text("DETALLES Y CONCEPTOS", 15, 125);
+      let y = 135; // Variable para controlar la posición en y
+      productosFacturados.forEach((producto, index) => {
+        doc.text(`${producto.codigo}`, 15, y);
+        doc.text(`${producto.descripcion}`, 40, y);
+        doc.text(`${producto.precioUnitario}`, 90, y);
+        doc.text(`${producto.cantidad}`, 120, y);
+        doc.text(`${producto.porcentajeIVA}`, 150, y);
+        doc.text(`${producto.subTotal}`, 170, y);
+        doc.text(`${producto.iva}`, 190, y);
+        doc.text(`${producto.total}`, 210, y);
+        y += 10; // Incrementar la posición en y para el próximo producto
+      });
+  
+      // Agregar mensajes adicionales obtenidos mediante consulta Axios
+      const mensajesAdicionales = await obtenerMensajesAdicionales();
+      doc.text(mensajesAdicionales, 15, y + 20);
+  
+      // Obtener el total de la factura
+      const totalFactura = productosFacturados.reduce((total, producto) => total + producto.total, 0);
+      doc.text(`Total Factura: $${totalFactura.toFixed(2)}`, 15, y + 40);
+  
+      // Guardar el PDF con el número de factura como nombre del archivo
+      doc.save(`${numActual}.pdf`);
+  
+    } catch (error) {
+      console.error('Error al generar el PDF:', error);
+    }
+  };
+  
+  const obtenerMensajesAdicionales = async () => {
+    try {
       // Hacer la consulta Axios para obtener los mensajes adicionales
       const response = await axios.get('http://localhost:3000/api/config/mensajes');
       const mensajes = response.data;
-
-      // Acceder a cada mensaje individualmente
-      const mensaje1 = mensajes.mensaje1;
-      const mensaje2 = mensajes.mensaje2;
-      const mensaje3 = mensajes.mensaje3;
-      const mensaje4 = mensajes.mensaje4;
-
-      return { mensaje1, mensaje2, mensaje3, mensaje4 };
-  } catch (error) {
+  
+      // Construir la cadena de mensajes adicionales
+      let mensajesConcatenados = '';
+      for (let key in mensajes) {
+        mensajesConcatenados += mensajes[key];
+      }
+  
+      return mensajesConcatenados;
+    } catch (error) {
       console.error('Error al obtener los mensajes adicionales:', error);
-      return {}; // Retornar un objeto vacío en caso de error
-  }
-};
+      return ''; // Retornar una cadena vacía en caso de error
+    }
+  };
   
   
   
@@ -561,7 +514,6 @@ const obtenerMensajesAdicionales = async () => {
       <div className="seccion-botones">
         <button className="btn btn-primary" onClick={guardarFactura}>Guardar Factura</button>
         <button type="button" className="btn btn-secondary" onClick={resetValores}>Cancelar</button>
-        
       </div>
     </div>
   );

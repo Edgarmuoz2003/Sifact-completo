@@ -1,31 +1,29 @@
 const mongoose = require('mongoose');
+
 const { Schema } = mongoose;
 
-const DetalleFacturaSchema = new Schema({
-    producto: {
-        type: Schema.Types.ObjectId,
-        ref: 'producto'
-    },
-    codigo: {type: String, required:true},
-    descripcion: { type: String, required: true},
+const productoSchema = new Schema({
+    codigoProducto: { type: String, required: true },
+    descripcionProducto: { type: String, required: true },
+    precioUnitario: { type: Number, required: true },
     cantidad: { type: Number, required: true },
-    precioUnidad: { type: Number, required: true },
+    subTotal: { type: Number, required: true },
     iva: { type: Number, required: true },
-    
+    total: { type: Number, required: true }
 });
 
-const FacturaSchema = new Schema({
-    numeroFactura: { type: String, required: true, unique: true },
+const facturaSchema = new Schema({
+    numeroFactura: { type: String, required: true },
     cliente: {
         type: Schema.Types.ObjectId,
-        ref: 'cliente'
+        ref: 'Cliente', // Referencia al modelo de Cliente
+        required: true
     },
-    fecha: { type: Date, default: Date.now, required: true },
-    detalle: [DetalleFacturaSchema],
-    totalNeto: { type: Number, required: true },
-    //subTotal: { type: Number, required: true },
+    productos: [productoSchema], // Array de objetos producto
+    totalFactura: { type: Number, required: true },
+    fecha: { type: Date, default: Date.now }
 });
 
+const Factura = mongoose.model('Factura', facturaSchema);
 
-
-module.exports = mongoose.model('Factura', FacturaSchema);
+module.exports = Factura;

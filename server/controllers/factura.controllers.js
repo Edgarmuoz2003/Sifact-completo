@@ -6,15 +6,14 @@ const facturaCtrl = {};
 facturaCtrl.createFactura = async (req, res) => {
   try {
     // Extraer datos de la solicitud (body, parámetros, etc.)
-    const { numeroFactura, cliente, fecha, detalle, totalNeto } = req.body;
+    const { numeroFactura, cliente, productos, totalFactura } = req.body;
 
-    // Crear una nueva instancia de factura utilizando el modelo de Mongoose
+    // Crear un nuevo objeto de factura utilizando el modelo
     const nuevaFactura = new Factura({
       numeroFactura,
       cliente,
-      fecha,
-      detalle,
-      totalNeto
+      productos,
+      totalFactura
     });
 
     // Guardar la nueva factura en la base de datos
@@ -25,7 +24,7 @@ facturaCtrl.createFactura = async (req, res) => {
   } catch (error) {
     // Manejar errores
     console.error('Error al guardar la factura:', error);
-    res.status(500).json({ mensaje: 'Error al guardar la factura', error: error.message });
+    res.status(500).json({ mensaje: 'Error al guardar la factura', error: error.message }); 
   }
 };
 
@@ -55,7 +54,7 @@ facturaCtrl.getFacturaByNumero = async (req, res) => {
     const { numeroFactura } = req.params;
     
     // Convertir el número de factura a tipo número
-    const numeroFacturaNumero = numeroFactura;
+    const numeroFacturaNumero = parseInt(numeroFactura);
 
     // Buscar la factura por su número en la base de datos
     const facturaEncontrada = await Factura.findOne({ numeroFactura: numeroFacturaNumero });

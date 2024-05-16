@@ -14,7 +14,7 @@ function Configuraciones() {
   const [empresa, setEmpresa] = useState(null)
   const [mensaje1, setMensaje1] = useState("")
   const [mensaje2, setMensaje2] = useState("")
-  const [resolucionNum, setResolucionNum] = useState("")
+  const [resolucionNum, setResolucionNum] = useState(null)
   const [fechaRes, setFecharRes] = useState("")
   const [autoriza, setAutoriza] = useState("")
   const [numInicio, setNumInicio] = useState("")
@@ -26,6 +26,7 @@ function Configuraciones() {
   const [adicional3, setAdicional3] = useState("")
   const [adicional4, setAdicional4] = useState("")
   const [msgAdicional, setMsgAdicional] = useState("")
+  const [idMensajesLey, setIdMensajesLey] = useState("")
   
 
   //creamos una funcion para cambiar de vistas
@@ -38,11 +39,12 @@ function Configuraciones() {
   const verEmpresa = async () => {
     try {
       const response = await axios.get('http://localhost:3000/api/config/empresa')
-      setEmpresa(response.data);
-      setNombre(empresa.nombre);
-      setNit(empresa.nit);
-      setDireccion(empresa.direccion)
-      setTelefono(empresa.telefono)
+      const empresaData = response.data
+      setEmpresa(empresaData.data);
+      setNombre(empresaData.nombre);
+      setNit(empresaData.nit);
+      setDireccion(empresaData.direccion)
+      setTelefono(empresaData.telefono)
     } catch (error) {
       console.error("Error al obtener los datos Registrados", error);
     }
@@ -75,69 +77,69 @@ function Configuraciones() {
   //METODOS PARA LA VISTA RESOLUCIONES
 
   //mostrar los datos guardados
-const verResolucion = async () => {
-  try {
-  const response = await axios.get('http://localhost:3000/api/config/resolucion');
-  const resolucionData = response.data[0];
-  if (resolucionData) {
-  setMensaje1(resolucionData.mensaje1);
-  setMensaje2(resolucionData.mensaje2);
-  setResolucionNum(resolucionData.resolucionNum);
-  setFecharRes(resolucionData.fechaRes);
-  setAutoriza(resolucionData.autoriza);
-  setNumInicio(resolucionData.numInicio);
-  SetNumFinal(resolucionData.numFinal);
-  setFechaVigecia(resolucionData.fechaVigencia);
-  }
-  } catch (error) {
-  console.error("Error al obtener los datos Registrados", error);
-  }
-};
-
+  const verResolucion = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/config/resolucion');
+      const resolucionData = response.data[0];
+      if (resolucionData) {
+        setMensaje1(resolucionData.mensaje1);
+        setMensaje2(resolucionData.mensaje2);
+        setResolucionNum(resolucionData.resolucionNum);
+        setFecharRes(resolucionData.fechaRes);
+        setAutoriza(resolucionData.autoriza);
+        setNumInicio(resolucionData.numInicio);
+        SetNumFinal(resolucionData.numFinal);
+        setFechaVigecia(resolucionData.fechaVigencia);
+      }
+    } catch (error) {
+      console.error("Error al obtener los datos Registrados", error);
+    }
+  };
 
   //guardar cambios
-const updateResolucion = async (event) => {
-  event.preventDefault();
-  
-  // Obtener los datos de la resolución primero
-  try {
-  const response = await axios.get('http://localhost:3000/api/config/resolucion');
-  const resolucionData = response.data[0]; // Suponiendo que solo necesitas el primer registro
-  if (!resolucionData) {
-  console.error("No se encontraron datos de resolución para actualizar");
-  return;
-  }
-  
-  // Una vez que tienes los datos, obtienes el ID
-  const id = resolucionData._id; // Suponiendo que el ID está en la propiedad _id
-  
-  // Ahora realizas la solicitud PUT para actualizar los datos usando el ID
-  const updateResponse = await axios.put(`http://localhost:3000/api/config/resolucion/${id}`, {
-  mensaje1: mensaje1,
-  mensaje2: mensaje2,
-  resolucionNum: resolucionNum,
-  fechaRes: fechaRes,
-  autoriza: autoriza,
-  numInicio: numInicio,
-  numFinal: numFinal,
-  fechaVigencia: fechaVigencia
-  });
-  
-  // Limpia los campos después de una actualización exitosa
-  await limpiarCamposRes();
-  
-  // Muestra un mensaje de éxito
-  Swal.fire({
-  title: "Actualización Exitosa!",
-  html: "<i>La resolución <strong>" + resolucionNum + "</strong> fue Actualizada con éxito </i>",
-  icon: "success",
-  timer: 3000
-  });
-  
-  } catch (error) {
-  console.error("Error al intentar actualizar los datos:", error.message);
-  }
+  const updateResolucion = async (event) => {
+    event.preventDefault(); 
+
+    // Obtener los datos de la resolución primero
+    try {
+        const response = await axios.get('http://localhost:3000/api/config/resolucion');
+        const resolucionData = response.data[0]; // Suponiendo que solo necesitas el primer registro
+        if (!resolucionData) {
+            console.error("No se encontraron datos de resolución para actualizar");
+            return;
+        }
+
+        // Una vez que tienes los datos, obtienes el ID
+        const id = resolucionData._id; // Suponiendo que el ID está en la propiedad _id
+
+        // Ahora realizas la solicitud PUT para actualizar los datos usando el ID
+        const updateResponse = await axios.put(`http://localhost:3000/api/config/resolucion/${id}`, {
+            mensaje1: mensaje1,
+            mensaje2: mensaje2,
+            resolucionNum: resolucionNum,
+            fechaRes: fechaRes,
+            autoriza: autoriza,
+            numInicio: numInicio,
+            numFinal: numFinal,
+            fechaVigencia: fechaVigencia 
+        });
+
+        // Limpia los campos después de una actualización exitosa
+        await limpiarCamposRes();
+
+        // Muestra un mensaje de éxito
+        Swal.fire({
+            title: "Actualización Exitosa!",
+            html: "<i>La resolución <strong>" + resolucionNum + "</strong>  fue Actualizada con éxito </i>",
+            icon: "success",
+            timer: 3000
+        });
+
+    } catch (error) {
+        console.error("Error al intentar actualizar los datos:", error.message);
+    }
 };
+
 
    //METODOS REFERENTES A LA VISTA MENSAJES ADICIONALES
   //Metodo para ver los mensajes Adicionales

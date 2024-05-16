@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState } from 'react';
 import axios from 'axios';
 import '../css/estilos-empleados.css';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2' 
 
 function Clientes() {
   const [agregar, setAgregar] = useState(false);

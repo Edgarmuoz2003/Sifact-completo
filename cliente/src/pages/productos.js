@@ -3,21 +3,20 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState } from 'react';
 import axios from 'axios';
 import '../css/estilos-empleados.css';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 
 function Productos() {
   const [agregar, setAgregar] = useState(false);
-  const [codigo, setCodigo] = useState("")
-  const [id, setId] = useState("")
+  const [codigo, setCodigo] = useState("");
+  const [id, setId] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState();
-  const [cantidad, setCantidad] = useState();
   const [impuesto, setImpuesto] = useState();
-  const [productos, setProductos] = useState([])
+  const [productos, setProductos] = useState(null); 
   const [editar, setEditar] = useState(false);
 
   //metodos principales
-//metodo para agregar
+  //metodo para agregar
   const add = async (event) => {
     event.preventDefault();
     try {
@@ -25,8 +24,7 @@ function Productos() {
         codigo: codigo,
         descripcion: descripcion,
         precio: precio,
-        impuesto: impuesto,
-        cantidad: cantidad
+        impuesto: impuesto
       });
       await limpiarCampos();
       Swal.fire({
@@ -34,19 +32,19 @@ function Productos() {
         html: "<i>se a agregado <strong>" + descripcion + "</strong>  a la lista de productos </i>",
         icon: "success",
         timer: 3000
-
       });
     } catch (error) {
       console.error("Error al agregar el producto:", error);
     }
   };
 
-  // metodo para buscar un cliente
+  //metodo para buscar un cliente
   const buscarProducto = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/producto/${descripcion}`);
-      setProductos(response.data);
-      limpiarCampos()
+      const response = await axios.get(`http://localhost:3000/api/productos/${codigo}`);
+      const producto = response.data;
+      setProductos(producto); 
+      limpiarCampos();
     } catch (error) {
       console.error("Error al buscar el producto:", error);
       
@@ -54,37 +52,13 @@ function Productos() {
         // Mostrar SweetAlert para indicar que el cliente no fue encontrado
         Swal.fire({
           title: "Producto no encontrado",
-          text: "No se encontró ningún Producto con esa descripción.",
+          text: "No se encontró ningún Producto con ese código.",
           icon: "error",
           timer: 3000
         });
       }
     }
   };
-
-  // const buscarProducto = async (descripcion) => {
-  //   try {
-  //     let url = `http://localhost:3000/api/producto/${descripcion}`;
-  
-      
-  
-  //     const response = await axios.get(url);
-  //     setProductos(response.data);
-  //     limpiarCampos();
-  //   } catch (error) {
-  //     console.error("Error al buscar el producto:", error);
-  
-  //     if (error.response && error.response.status === 404) {
-  //       // Mostrar SweetAlert para indicar que el producto no fue encontrado
-  //       Swal.fire({
-  //         title: "Producto no encontrado",
-  //         text: "No se encontró ningún producto con esa descripción o código.",
-  //         icon: "error",
-  //         timer: 3000
-  //       });
-  //     }
-  //   }
-  // };
 
   //metodo para actualizar empleado
   const update = async (event) => {
@@ -95,19 +69,17 @@ function Productos() {
       codigo: codigo,
       descripcion: descripcion,
       precio: precio,
-      impuesto: impuesto,
-      cantidad: cantidad
+      impuesto: impuesto
     });
     await limpiarCampos();
-    setProductos("");
-      Swal.fire({
-        title: "Actualizacion Exitosa!",
-        html: "<i>El producto <strong>" + descripcion + "</strong>  fue Actualizado con exito </i>",
-        icon: "success",
-        timer: 3000
-
-      });
-  }
+    setProductos(null); 
+    Swal.fire({
+      title: "Actualizacion Exitosa!",
+      html: "<i>El producto <strong>" + descripcion + "</strong>  fue Actualizado con exito </i>",
+      icon: "success",
+      timer: 3000
+    });
+  };
 
   //metodo para eliminar clientes
   const borrar = (producto) => {
@@ -123,24 +95,19 @@ function Productos() {
       if (result.isConfirmed) {
         axios.delete(`http://localhost:3000/api/productos/${producto._id}`).then(() => {
           limpiarCampos();
-          setProductos("")
+          setProductos(null); 
           Swal.fire({
             title: "Eliminado!",
             text: producto.descripcion + ' fue eliminado',
             icon: "success",
             timer: 3000
           });
-
-        })
-
+        });
       }
     });
-
-  }
-  
+  };
 
   //metodos secundarios
-
   const mostrarAgregar = () => {
     setAgregar(!agregar);
   }; 
@@ -150,21 +117,17 @@ function Productos() {
     setDescripcion("");
     setPrecio("");
     setImpuesto("");
-    setCantidad("");
     setEditar(false);
-  }
+  };
 
   const editarProducto = (producto) => {
     setEditar(true);
-
     setCodigo(producto.codigo);
     setDescripcion(producto.descripcion);
     setPrecio(producto.precio);
     setImpuesto(producto.impuesto);
-    setCantidad(producto.cantidad);
     setId(producto._id);
-
-  }
+  };
 
   return (
     <div className="container g-empleados">
@@ -254,47 +217,13 @@ function Productos() {
                 />
               </div>
 
-              <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">cantidad</span>
-                <input
-                  onChange={(event) => {
-                    setCantidad(event.target.value);
-                  }}
-                  type="number"
-                  className="form-control"
-                  value={cantidad}
-                  placeholder="Ingrese el % de impuesto segun la ley vigente"
-                  aria-label="impuesto"
-                  aria-describedby="basic-addon1"
-                  required
-                />
-              </div>
-
               <button type="submit" className="btn btn-primary" onClick={add}>Agregar</button>
             </form>
           </div>
         ) : (
           <div className="card-body">
-           <form>
+            <form>
               <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">Descripcion</span>
-                <input
-                  onChange={(event) => {
-                    setDescripcion(event.target.value);
-                  }}
-                  type="text"
-                  className="form-control"
-                  value={descripcion}
-                  placeholder="Ingrese Nombre del producto a buscar"
-                  aria-label="Descripcion"
-                  aria-describedby="basic-addon1"
-                  required
-                />
-              </div>
-
-              {editar ? (
-                 <>
-                <div className="input-group mb-3">
                 <span className="input-group-text" id="basic-addon1">Codigo</span>
                 <input
                   onChange={(event) => {
@@ -303,115 +232,102 @@ function Productos() {
                   type="text"
                   className="form-control"
                   value={codigo}
-                  placeholder="Ingrese el codigo"
+                  placeholder="Ingrese el Codigo del producto"
                   aria-label="codigo"
                   aria-describedby="basic-addon1"
                   required
                 />
               </div>
 
-              <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">Precio</span>
-                <input
-                  onChange={(event) => {
-                    setPrecio(event.target.value);
-                  }}
-                  type="number"
-                  className="form-control"
-                  value={precio}
-                  placeholder="Ingrese el precio de venta"
-                  aria-label="precio"
-                  aria-describedby="basic-addon1"
-                  required
-                />
-              </div>
+              {editar ? (
+                <>
+                  <div className="input-group mb-3">
+                    <span className="input-group-text" id="basic-addon1">Descripcion</span>
+                    <input
+                      onChange={(event) => {
+                        setDescripcion(event.target.value);
+                      }}
+                      type="text"
+                      className="form-control"
+                      value={descripcion}
+                      placeholder="Ingrese la descripcion del producto"
+                      aria-label="descripcion"
+                      aria-describedby="basic-addon1"
+                      required
+                    />
+                  </div>
 
-              <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">% de Impuesto</span>
-                <input
-                  onChange={(event) => {
-                    setImpuesto(event.target.value);
-                  }}
-                  type="number"
-                  className="form-control"
-                  value={impuesto}
-                  placeholder="Ingrese el % de impuesto segun la ley vigente"
-                  aria-label="impuesto"
-                  aria-describedby="basic-addon1"
-                  required
-                />
-              </div>
+                  <div className="input-group mb-3">
+                    <span className="input-group-text" id="basic-addon1">Precio</span>
+                    <input
+                      onChange={(event) => {
+                        setPrecio(event.target.value);
+                      }}
+                      type="number"
+                      className="form-control"
+                      value={precio}
+                      placeholder="Ingrese el precio de venta"
+                      aria-label="precio"
+                      aria-describedby="basic-addon1"
+                      required
+                    />
+                  </div>
 
-              <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">cantidad</span>
-                <input
-                  onChange={(event) => {
-                    setCantidad(event.target.value);
-                  }}
-                  type="number"
-                  className="form-control"
-                  value={cantidad}
-                  placeholder="Ingrese el % de impuesto segun la ley vigente"
-                  aria-label="impuesto"
-                  aria-describedby="basic-addon1"
-                  required
-                />
-              </div>
-              <button type="button" className="btn btn-primary" onClick={update}>
-                Guardar Cambios
-              </button>
+                  <div className="input-group mb-3">
+                    <span className="input-group-text" id="basic-addon1">% de Impuesto</span>
+                    <input
+                      onChange={(event) => {
+                        setImpuesto(event.target.value);
+                      }}
+                      type="number"
+                      className="form-control"
+                      value={impuesto}
+                      placeholder="Ingrese el % de impuesto segun la ley vigente"
+                      aria-label="impuesto"
+                      aria-describedby="basic-addon1"
+                      required
+                    />
+                  </div>
+                  <button type="button" className="btn btn-primary" onClick={update}>
+                    Guardar Cambios
+                  </button>
 
-              </>
-
+                </>
               ) : (
                 <>
-                <button type="button" className="btn btn-primary" onClick={buscarProducto}>
-                Buscar
-              </button>
+                  <button type="button" className="btn btn-primary" onClick={buscarProducto}>
+                    Buscar
+                  </button>
 
-                {productos.length > 0 && (
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Codigo</th>
-                        <th>Descripcion</th>
-                        <th>Precio de venta</th>
-                        <th>% de Impuesto</th>
-                        <th>cantidad</th>
-                        <th>Acciones</th>
-                        
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {productos.map((productos) => (
-                        <tr key={productos._id} >
-                        <td>{productos.codigo}</td>
-                        <td>{productos.descripcion}</td>
-                        <td>{productos.precio}</td>
-                        <td>{productos.impuesto}</td>
-                        <td>{productos.cantidad}</td>
-                        <td>
-                          <div className="btn-group" role="group" aria-label="Basic mixed styles example">
-                            <button type="button" className="btn btn-info" onClick={(event) => {
-                              editarProducto(productos)
-                            }} >Actualizar</button>
-                            <button type="button" onClick={() => {
-                              borrar(productos)
-                            }} className="btn btn-danger">Eliminar</button>
-                          </div>
-                        </td>
-                        
-                      </tr>
-
-                      ))}
-                      
-                    </tbody>
-                  </table>
-                )}
+                  {productos !== null && (
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Codigo</th>
+                          <th>Descripcion</th>
+                          <th>Precio de venta</th>
+                          <th>% de Impuesto</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr key={productos._id}>
+                          <td>{productos.codigo}</td>
+                          <td>{productos.descripcion}</td>
+                          <td>{productos.precio}</td>
+                          <td>{productos.impuesto}</td>
+                          <td>
+                            <div className="btn-group" role="group" aria-label="Basic mixed styles example">
+                              <button type="button" className="btn btn-info" onClick={(event) => editarProducto(productos)}>Actualizar</button>
+                              <button type="button" onClick={() => borrar(productos)} className="btn btn-danger">Eliminar</button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  )}
                 </>
-
-              )
-            }
+              )}
             </form>
           </div>
         )}

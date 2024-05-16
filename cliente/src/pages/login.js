@@ -1,21 +1,38 @@
-import 'bootstrap/dist/css/bootstrap.min.css'
-// Importa useState desde react
-import React, { useState } from 'react'; 
-import { useHistory } from 'react-router-dom/cjs/react-router-dom.min'; 
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useRef } from 'react';
+import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 import '../css/estilos-login.css';
 
 const Login = ({ setAuthenticated, setToken, setNombre }) => {
-  // Crear estados locales
   const history = useHistory();
   const [documento, setDocumento] = useState('');
   const [contrasenia, setContrasenia] = useState('');
   const [error, setError] = useState('');
+  
+  // Referencias a los campos de documento y contraseña
+  const contraseniaRef = useRef(null);
+
+  // Manejar el evento de presionar Enter en el campo de documento
+  const handleDocumentoKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Evitar que el formulario se envíe
+      contraseniaRef.current.focus(); // Pasar el foco al campo de contraseña
+    }
+  };
+
+  // Manejar el evento de presionar Enter en el campo de contraseña
+  const handleContraseniaKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Evitar que el formulario se envíe
+      auth(); // Ejecutar la función de autenticación
+    }
+  };
 
   // Método para autenticarse
   const auth = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/api/login", {
+      const response = await axios.post("http://192.168.1.178:3000/api/login", {
         documento: documento,
         contrasenia: contrasenia
       });
@@ -27,7 +44,6 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
 
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('nombre', response.data.nombre);
-
 
         history.push('/home');
       } else {
@@ -42,7 +58,6 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
     }
   };
 
-
   return (
     <div className="container contenedor-login">
       <div className="card text-center">
@@ -53,6 +68,7 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
               <label htmlFor="documento" className="form-label">Nro de Documento</label>
               <input
                 onChange={(event) => setDocumento(event.target.value)}
+                onKeyPress={handleDocumentoKeyPress} // Manejar el evento de presionar Enter
                 type="number" name="documento" className="form-control" id="documento" placeholder="Número de documento"/>
             </div>
 
@@ -60,6 +76,8 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
               <label htmlFor="contrasenia" className="form-label">Contraseña</label>
               <input
                 onChange={(event) => setContrasenia(event.target.value)}
+                onKeyPress={handleContraseniaKeyPress} // Manejar el evento de presionar Enter
+                ref={contraseniaRef} // Referencia al campo de contraseña
                 type="password" name="contrasenia" className="form-control" id="contrasenia" placeholder="Ingrese su contraseña"/>
             </div>
           </form>

@@ -21,44 +21,16 @@ productoCtrl.createProductos = async(req, res) => {
     }
 }
 
-// //metodo para consultar productos 
-// productoCtrl.getProducto = async(req, res) => {
-//     const { descripcion } = req.params
-
-//     try {
-//         const expresion = new RegExp(descripcion, 'i')
-//         const response = await Producto.find({ descripcion: expresion });
-
-//         if(response.length === 0) {
-//             return res.status(404).json({ message: 'NO se hayó ningun producto con esa descripcion' })
-//         }
-//         res.json(response)
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Error al obtener los productos', details: error.message });
-//     }
-// }
-
+//metodo para consultar productos 
 productoCtrl.getProducto = async (req, res) => {
-    const { descripcion } = req.params;
-    const { codigo } = req.query; // Obtener el código desde los parámetros de consulta
+    const codigo = req.params.codigo;
 
     try {
-        let query = { descripcion: new RegExp(descripcion, 'i') };
+        const expresion = new RegExp(codigo, 'i');
+        const response = await Producto.findOne({ codigo: expresion });
 
-        if (codigo) {
-            query = {
-                $or: [
-                    { descripcion: new RegExp(descripcion, 'i') },
-                    { codigo: codigo }
-                ]
-            };
-        }
-
-        const response = await Producto.find(query);
-
-        if (response.length === 0) {
-            return res.status(404).json({ message: 'No se encontró ningún producto con esa descripción o código.' });
+        if (!response) {
+            return res.status(404).json({ message: 'No se encontró ningún producto con esa descripción' });
         }
 
         res.json(response);
@@ -66,7 +38,9 @@ productoCtrl.getProducto = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Error al obtener los productos', details: error.message });
     }
-};
+}
+
+
 
 //metodo para consultar todos los productos
 productoCtrl.getProductos = async(req, res) => {
