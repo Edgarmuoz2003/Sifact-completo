@@ -41,52 +41,50 @@ function Productos() {
     }
   };
 
-  //metodo para buscar un cliente
-  // const buscarProducto = async () => {
-  //   try {
-  //     const response = await axios.get(`http://localhost:3000/api/producto/${descripcion}`);
-  //     setProductos(response.data);
-  //     limpiarCampos()
-  //   } catch (error) {
-  //     console.error("Error al buscar el producto:", error);
-      
-  //     if (error.response && error.response.status === 404) {
-  //       // Mostrar SweetAlert para indicar que el cliente no fue encontrado
-  //       Swal.fire({
-  //         title: "Producto no encontrado",
-  //         text: "No se encontró ningún Producto con esa descripción.",
-  //         icon: "error",
-  //         timer: 3000
-  //       });
-  //     }
-  //   }
-  // };
-
-  const buscarProducto = async (descripcion, codigo) => {
+  // metodo para buscar un cliente
+  const buscarProducto = async () => {
     try {
-      let url = `http://localhost:3000/api/producto/${descripcion}`;
-  
-      if (codigo) {
-        url += `?codigo=${codigo}`;
-      }
-  
-      const response = await axios.get(url);
+      const response = await axios.get(`http://localhost:3000/api/producto/${descripcion}`);
       setProductos(response.data);
-      limpiarCampos();
+      limpiarCampos()
     } catch (error) {
       console.error("Error al buscar el producto:", error);
-  
+      
       if (error.response && error.response.status === 404) {
-        // Mostrar SweetAlert para indicar que el producto no fue encontrado
+        // Mostrar SweetAlert para indicar que el cliente no fue encontrado
         Swal.fire({
           title: "Producto no encontrado",
-          text: "No se encontró ningún producto con esa descripción o código.",
+          text: "No se encontró ningún Producto con esa descripción.",
           icon: "error",
           timer: 3000
         });
       }
     }
   };
+
+  // const buscarProducto = async (descripcion) => {
+  //   try {
+  //     let url = `http://localhost:3000/api/producto/${descripcion}`;
+  
+      
+  
+  //     const response = await axios.get(url);
+  //     setProductos(response.data);
+  //     limpiarCampos();
+  //   } catch (error) {
+  //     console.error("Error al buscar el producto:", error);
+  
+  //     if (error.response && error.response.status === 404) {
+  //       // Mostrar SweetAlert para indicar que el producto no fue encontrado
+  //       Swal.fire({
+  //         title: "Producto no encontrado",
+  //         text: "No se encontró ningún producto con esa descripción o código.",
+  //         icon: "error",
+  //         timer: 3000
+  //       });
+  //     }
+  //   }
+  // };
 
   //metodo para actualizar empleado
   const update = async (event) => {
