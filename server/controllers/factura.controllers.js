@@ -55,7 +55,7 @@ facturaCtrl.getFacturaByNumero = async (req, res) => {
     const { numeroFactura } = req.params;
     
     // Convertir el número de factura a tipo número
-    const numeroFacturaNumero = parseInt(numeroFactura);
+    const numeroFacturaNumero = numeroFactura;
 
     // Buscar la factura por su número en la base de datos
     const facturaEncontrada = await Factura.findOne({ numeroFactura: numeroFacturaNumero });

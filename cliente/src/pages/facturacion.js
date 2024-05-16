@@ -72,7 +72,7 @@ function Facturacion({ nombre }) {
         );
         const data = response.data[0];
         setNumInicio(data.numActual);
-        setNumActual(`${autoriza} - 0000${numInicio}`);
+        setNumActual(`${autoriza}-0000${numInicio}`);
 
         //en esta seccion si sí hay datos en la bd verifica cual es y le suma 1 y luego actualiza el valor en la bd
         //de modo que cada que se hace un llamado a la funcion la base de datos sumara un numero en numActual.
