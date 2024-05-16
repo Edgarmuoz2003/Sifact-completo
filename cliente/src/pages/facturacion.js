@@ -20,6 +20,7 @@ function Facturacion({ nombre }) {
     const fechaActual = new Date().toISOString().split('T')[0];
     setFecha(fechaActual)
   }
+  
 
   const obtenerNumero = async () => {
     try {
