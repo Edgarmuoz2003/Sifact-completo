@@ -103,7 +103,18 @@ function Facturacion({ nombre }) {
       } catch (error) {
         console.error('Error al buscar cliente:', error);
         setCliente(null);
+        setNit("");
+        Swal.fire({
+        title: "cliente no encontrado!",
+        html:
+          "<i>el cliente  <strong> " +
+          nit +
+          "</strong> no esta  registrado  </i>",
+        icon: "error",
+        timer: 3000,
+        });
       }
+      
     }
   }
 
