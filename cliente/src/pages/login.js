@@ -32,7 +32,7 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
   // Método para autenticarse
   const auth = async () => {
     try {
-      const response = await axios.post("http://192.168.1.178:3000/api/login", {
+      const response = await axios.post("http://localhost:3000/api/login", {
         documento: documento,
         contrasenia: contrasenia
       });
@@ -44,6 +44,7 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
 
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('nombre', response.data.nombre);
+
 
         history.push('/home');
       } else {
