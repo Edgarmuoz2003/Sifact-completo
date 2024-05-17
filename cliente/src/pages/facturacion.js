@@ -86,7 +86,7 @@ function Facturacion({ nombre }) {
 
   //SECCION DATOS DEL CLIENTE
 
-  const [nit, setNit] = useState('99');
+  const [nit, setNit] = useState('');
   const [cliente, setCliente] = useState(null)
 
   const manejarCambios = (event) => {
@@ -164,6 +164,7 @@ function Facturacion({ nombre }) {
     setProducto(null); // Reiniciamos el producto a null
     setCantidad(''); // Reiniciamos la cantidad
     setError(''); // Reiniciamos el mensaje de error
+    setNit('');
     codigoRef.current.focus(); // Enfocamos nuevamente el campo de código
   };
 
@@ -236,7 +237,7 @@ function Facturacion({ nombre }) {
 
   const resetValores = () => {
     // Limpiar y reinicializar los campos de datos del cliente
-    setNit(99);
+    setNit();
     setCliente(null);
   
     // Limpiar y reinicializar los campos de productos a facturar
