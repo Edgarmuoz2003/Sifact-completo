@@ -1,60 +1,100 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from 'axios';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '../css/estilos-facturacion.css';
-import Swal from 'sweetalert2';
-import jsPDF from 'jspdf';
+import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../css/estilos-facturacion.css";
+import Swal from "sweetalert2";
+import jsPDF from "jspdf";
+import FacturaTable from "./FacturaTable";
 
 function Facturacion({ nombre }) {
-
-  const [fecha, setFecha] = useState('');
-  const [autoriza, setAutoriza] = useState('');
+  const [fecha, setFecha] = useState("");
+  const [autoriza, setAutoriza] = useState("");
   const [numInicio, setNumInicio] = useState();
-  const [numActual, setNumActual] = useState('');
-  const [empresa, setEmpresa] = useState('');
+  const [numActual, setNumActual] = useState("");
+  const [empresa, setEmpresa] = useState("");
   const [productosFacturados, setProductosFacturados] = useState([]);
   const [totalFactura, setTotalFactura] = useState(0);
-  const [resolucion, setResolucion] = useState(null)
+  const [resolucion, setResolucion] = useState(null);
+
+  const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
+  const [showModal2, setShowModal2] = useState(false); // Estado para controlar la visibilidad del modal
+
+  const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - "); // Estado para controlar el valor del input de búsqueda
+  const [facturaEncontrada, setFacturaEncontrada] = useState(null);
+
+  const buscarFactura = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/facturacion/${searchNumFactura}`
+      );
+      const data = response.data;
+      setFacturaEncontrada(data);
+      setShowModal(false); // Cerrar el modal después de la búsqueda
+      setShowModal2(true);
+      
+    } catch (error) {
+      console.error("Error al buscar la factura:", error);
+      setFacturaEncontrada(null);
+      Swal.fire({
+        title: "Factura no encontrada",
+        text: `La factura con número ${searchNumFactura} no fue encontrada.`,
+        icon: "error",
+        timer: 3000,
+      });
+    }
+  };
 
   const obtenerFecha = () => {
-    const fechaActual = new Date().toISOString().split('T')[0];
-    setFecha(fechaActual)
-  }
+    const fechaActual = new Date().toISOString().split("T")[0];
+    setFecha(fechaActual);
+  };
 
   const obtenerNumero = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/config/resolucion');
+      const response = await axios.get(
+        "http://localhost:3000/api/config/resolucion"
+      );
       const data = response.data[0];
-      setResolucion(data)
-      setAutoriza(data.autoriza); 
+      setResolucion(data);
+      setAutoriza(data.autoriza);
       setNumInicio(data.numInicio);
 
-      const verificarNum = await axios.get('http://localhost:3000/api/config/numActual');
+      const verificarNum = await axios.get(
+        "http://localhost:3000/api/config/numActual"
+      );
       const numVerificado = verificarNum.data[0];
 
       if (!numVerificado) {
-        await axios.post('http://localhost:3000/api/config/numActual', { numActual: numInicio });
+        await axios.post("http://localhost:3000/api/config/numActual", {
+          numActual: numInicio,
+        });
         setNumActual(`${autoriza} - 0000${numInicio}`);
       } else {
         const id = numVerificado._id;
         const nuevoNumero = numVerificado.numActual + 1;
-        
-        await axios.put(`http://localhost:3000/api/config/numActual/${id}`, { numActual: nuevoNumero });
-        setNumActual(`${autoriza} - 0000${nuevoNumero}`); 
+
+        await axios.put(`http://localhost:3000/api/config/numActual/${id}`, {
+          numActual: nuevoNumero,
+        });
+        setNumActual(`${autoriza} - 0000${nuevoNumero}`);
       }
     } catch (error) {
-      console.error('Error al obtener los datos:', error);
+      console.error("Error al obtener los datos:", error);
     }
   };
 
   const mostrarNumeroActual = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/config/resolucion');
+      const response = await axios.get(
+        "http://localhost:3000/api/config/resolucion"
+      );
       const data = response.data[0];
       setAutoriza(data.autoriza);
-      setNumInicio(data.numInicio); 
+      setNumInicio(data.numInicio);
 
-      const verificarNum = await axios.get('http://localhost:3000/api/config/numActual');
+      const verificarNum = await axios.get(
+        "http://localhost:3000/api/config/numActual"
+      );
       const numVerificado = verificarNum.data[0];
 
       if (!numVerificado) {
@@ -64,118 +104,121 @@ function Facturacion({ nombre }) {
         setNumActual(`${data.autoriza} - 0000${nuevoNumero}`);
       }
     } catch (error) {
-      console.error('Error al obtener los datos:', error);
-    }   
-  };  
+      console.error("Error al obtener los datos:", error);
+    }
+  };
 
   const showEmpresa = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/config/empresa')
-      const empresaData = response.data
-      setEmpresa(empresaData)
+      const response = await axios.get(
+        "http://localhost:3000/api/config/empresa"
+      );
+      const empresaData = response.data;
+      setEmpresa(empresaData);
     } catch (error) {
-      console.error('Error al obtener los datos:', error);
+      console.error("Error al obtener los datos:", error);
     }
-  }
+  };
 
   useEffect(() => {
-    obtenerFecha(); 
-    mostrarNumeroActual()
-    showEmpresa()
+    obtenerFecha();
+    mostrarNumeroActual();
+    showEmpresa();
   }, []);
 
   //SECCION DATOS DEL CLIENTE
 
-  const [nit, setNit] = useState('');
-  const [cliente, setCliente] = useState(null)
+  const [nit, setNit] = useState("");
+  const [cliente, setCliente] = useState(null);
 
   const manejarCambios = (event) => {
-    setNit(event.target.value)
+    setNit(event.target.value);
   };
 
   const manejarBusqueda = async (event) => {
-    if(event.key === 'Enter'){
+    if (event.key === "Enter") {
       try {
-        const response = await axios.get(`http://localhost:3000/api/cliente/${nit}`)
+        const response = await axios.get(
+          `http://localhost:3000/api/cliente/${nit}`
+        );
         const data = response.data;
         setCliente(data);
         codigoRef.current.focus(); // Cambio de foco al campo de Código
       } catch (error) {
-        console.error('Error al buscar cliente:', error);
+        console.error("Error al buscar cliente:", error);
         setCliente(null);
         setNit("");
         Swal.fire({
-        title: "cliente no encontrado!",
-        html:
-          "<i>el cliente  <strong> " +
-          nit +
-          "</strong> no esta  registrado  </i>",
-        icon: "error",
-        timer: 3000,
+          title: "cliente no encontrado!",
+          html:
+            "<i>el cliente  <strong> " +
+            nit +
+            "</strong> no esta  registrado  </i>",
+          icon: "error",
+          timer: 3000,
         });
       }
-      
     }
-  }
+  };
 
   //SECCION PRODUCTOS A FACTURAR
 
-  const [codigo, setCodigo] = useState('');
-  const [producto, setProducto] = useState('');
+  const [codigo, setCodigo] = useState("");
+  const [producto, setProducto] = useState("");
   const [cantidad, setCantidad] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const codigoRef = useRef(null); // Referencia al campo de Código
   const cantidadRef = useRef(null);
 
   const mCambiosCod = (event) => {
-    setCodigo(event.target.value)
-  }
+    setCodigo(event.target.value);
+  };
 
   const mBusquedaCod = async (event) => {
-    if(event.key === 'Enter'){
+    if (event.key === "Enter") {
       try {
-        const response = await axios.get(`http://localhost:3000/api/productos/${codigo}`)
-        const producData = response.data
-        setProducto(producData)
+        const response = await axios.get(
+          `http://localhost:3000/api/productos/${codigo}`
+        );
+        const producData = response.data;
+        setProducto(producData);
         cantidadRef.current.focus();
       } catch (error) {
-        console.error('Error al buscar producto', error);
+        console.error("Error al buscar producto", error);
       }
     }
-  }
+  };
 
-  //SECCION DE DETALLES DE PRODUCTOS 
+  //SECCION DE DETALLES DE PRODUCTOS
 
   const mCambiosCan = (event) => {
-    setCantidad(event.target.value)
-  }
+    setCantidad(event.target.value);
+  };
 
   const mOpercacionesCan = async (event) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       if (cantidad) {
-        const totalproducto = await producto.precio * cantidad;
-        const impuesto = await producto.impuesto * totalproducto / 100;
+        const totalproducto = (await producto.precio) * cantidad;
+        const impuesto = ((await producto.impuesto) * totalproducto) / 100;
         const bruto = totalproducto - impuesto;
-  
+
         // Agregar el producto con los valores calculados a la tabla
         agregarProductoConValores(totalproducto, impuesto, bruto);
-  
+
         // Limpiar campos para el próximo producto
         limpiarCampos();
-
-
       } else {
-        setError('Ingrese una Cantidad');
+        setError("Ingrese una Cantidad");
       }
     }
   };
 
   const limpiarCampos = () => {
-    setCodigo(''); // Limpiamos el campo de código
+    setCodigo(""); // Limpiamos el campo de código
     setProducto(null); // Reiniciamos el producto a null
-    setCantidad(''); // Reiniciamos la cantidad
-    setError(''); // Reiniciamos el mensaje de error
-    setNit('');
+    setCantidad(""); // Reiniciamos la cantidad
+    setError(""); // Reiniciamos el mensaje de error
+    setNit("");
     codigoRef.current.focus(); // Enfocamos nuevamente el campo de código
   };
 
@@ -188,11 +231,11 @@ function Facturacion({ nombre }) {
       porcentajeIVA: producto.impuesto,
       subTotal: bruto, // Usamos bruto como subTotal ya que este es el total sin impuestos
       iva: impuesto,
-      total: totalproducto // Total incluye impuestos
+      total: totalproducto, // Total incluye impuestos
     };
     const nuevosProductosFacturados = [...productosFacturados, nuevoProducto];
     setProductosFacturados(nuevosProductosFacturados);
-    
+
     // Recalcular el total de la factura
     const nuevoTotalFactura = calcularTotalFactura(nuevosProductosFacturados);
     setTotalFactura(nuevoTotalFactura);
@@ -211,38 +254,38 @@ function Facturacion({ nombre }) {
   const guardarFactura = async () => {
     try {
       // Construir el objeto de factura con los datos necesarios
-      const productosFactura = productosFacturados.map(producto => ({
+      const productosFactura = productosFacturados.map((producto) => ({
         codigoProducto: producto.codigo,
         descripcionProducto: producto.descripcion,
         cantidad: producto.cantidad,
         precioUnitario: producto.precioUnitario,
         subTotal: producto.subTotal,
         iva: producto.iva,
-        total: producto.total
+        total: producto.total,
       }));
-  
+
       const facturaData = {
         numeroFactura: numActual,
         cliente: cliente._id,
         productos: productosFactura,
-        totalFactura: totalFactura
+        totalFactura: totalFactura,
       };
-  
+
       // Enviar la solicitud POST al backend para guardar la factura
-      await axios.post('http://localhost:3000/api/facturacion', facturaData);
-      await generarPDF()
+      await axios.post("http://localhost:3000/api/facturacion", facturaData);
+      await generarPDF();
       await resetValores();
       Swal.fire({
         title: "¡Factura guardada con éxito!",
         text: "La factura se ha guardado correctamente.",
         icon: "success",
-        timer: 3000
+        timer: 3000,
       });
 
       // Si la factura se guarda correctamente, actualizar el número de factura
       await obtenerNumero();
     } catch (error) {
-      console.error('Error al guardar la factura:', error);
+      console.error("Error al guardar la factura:", error);
     }
   };
 
@@ -250,121 +293,122 @@ function Facturacion({ nombre }) {
     // Limpiar y reinicializar los campos de datos del cliente
     setNit();
     setCliente(null);
-  
+
     // Limpiar y reinicializar los campos de productos a facturar
     setCodigo("");
-    setCantidad('');
+    setCantidad("");
     setProducto(null);
-  
+
     // Limpiar y reinicializar los campos de detalles de los productos (tabla)
     setProductosFacturados([]);
     setTotalFactura(0);
   };
 
-//GENERAR EL PDF DE LA FACTURA
-const generarPDF = async () => {
-  try {
-    // Crear el documento PDF
-    const doc = new jsPDF();
+  //GENERAR EL PDF DE LA FACTURA
+  const generarPDF = async () => {
+    try {
+      // Crear el documento PDF
+      const doc = new jsPDF();
 
-    doc.setFontSize(12); // Aumentar el tamaño del texto
+      doc.setFontSize(12); // Aumentar el tamaño del texto
 
-    // Agregar recuadro de fondo azul alrededor de todos los títulos
-    doc.setFillColor(0, 51, 102); // Azul oscuro
-    doc.setTextColor(255); // Blanco
-    doc.rect(10, 10, 190, 10, 'F'); // Rectángulo para "FACTURA DE VENTA"
-    doc.rect(10, 53, 190, 10, 'F'); // Rectángulo para "DATOS DEL CLIENTE"
-    doc.rect(10, 88, 190, 10, 'F'); // Rectángulo para "DETALLES Y CONCEPTOS"
+      // Agregar recuadro de fondo azul alrededor de todos los títulos
+      doc.setFillColor(0, 51, 102); // Azul oscuro
+      doc.setTextColor(255); // Blanco
+      doc.rect(10, 10, 190, 10, "F"); // Rectángulo para "FACTURA DE VENTA"
+      doc.rect(10, 53, 190, 10, "F"); // Rectángulo para "DATOS DEL CLIENTE"
+      doc.rect(10, 88, 190, 10, "F"); // Rectángulo para "DETALLES Y CONCEPTOS"
 
-    // Agregar texto "FACTURA DE VENTA" en azul
-    doc.setTextColor(255); // Blanco
-    doc.text("FACTURA DE VENTA", 85, 18); // Ajustar la posición del texto
+      // Agregar texto "FACTURA DE VENTA" en azul
+      doc.setTextColor(255); // Blanco
+      doc.text("FACTURA DE VENTA", 85, 18); // Ajustar la posición del texto
 
-    // Agregar los datos del almacén (empresa) en azul
-    doc.setTextColor(0, 51, 102); // Azul oscuro
-    doc.text(empresa.nombre, 20, 30);
-    doc.text(`NIT: ${empresa.nit}`, 20, 35);
-    doc.text(`Dirección: ${empresa.direccion}`, 20, 40);
-    doc.text(`Teléfono: ${empresa.telefono}`, 20, 45);
+      // Agregar los datos del almacén (empresa) en azul
+      doc.setTextColor(0, 51, 102); // Azul oscuro
+      doc.text(empresa.nombre, 20, 30);
+      doc.text(`NIT: ${empresa.nit}`, 20, 35);
+      doc.text(`Dirección: ${empresa.direccion}`, 20, 40);
+      doc.text(`Teléfono: ${empresa.telefono}`, 20, 45);
 
-    // Agregar número de factura y fecha en azul
-    doc.setTextColor(0)
-    doc.text(`Número de Factura: ${numActual}`, 130, 30);
-    doc.text(`Fecha: ${fecha}`, 130, 38);
+      // Agregar número de factura y fecha en azul
+      doc.setTextColor(0);
+      doc.text(`Número de Factura: ${numActual}`, 130, 30);
+      doc.text(`Fecha: ${fecha}`, 130, 38);
 
-    // Agregar datos del cliente
-    doc.setTextColor(255); // Negro
-    doc.text("DATOS DEL CLIENTE", 85, 60);
-    doc.setTextColor(0)
-    doc.text(`NIT: ${cliente ? cliente.nit : ""}`, 20, 70);
-    doc.text(`Nombre: ${cliente ? cliente.nombre : ""}`, 20, 75);
-    doc.text(`Dirección: ${cliente ? cliente.direccion : ""}`, 20, 80);
-    doc.text(`Teléfono: ${cliente ? cliente.telefono : ""}`, 20, 85);
+      // Agregar datos del cliente
+      doc.setTextColor(255); // Negro
+      doc.text("DATOS DEL CLIENTE", 85, 60);
+      doc.setTextColor(0);
+      doc.text(`NIT: ${cliente ? cliente.nit : ""}`, 20, 70);
+      doc.text(`Nombre: ${cliente ? cliente.nombre : ""}`, 20, 75);
+      doc.text(`Dirección: ${cliente ? cliente.direccion : ""}`, 20, 80);
+      doc.text(`Teléfono: ${cliente ? cliente.telefono : ""}`, 20, 85);
 
-    // Agregar sección de detalles y conceptos
-    doc.setTextColor(255); // Blanco
-    doc.text("Descripción", 15, 95);
-    doc.text("Cantidad", 100, 95);
-    doc.text("Precio X und", 120, 95);
-    doc.text("Total", 180, 95);
-    doc.setTextColor(0); // Negro
-    let y = 105; // Variable para controlar la posición en y
-     let totalIVA = 0;
-    productosFacturados.forEach((producto, index) => {
-      doc.text(`${producto.descripcion}`, 15, y);
-      doc.text(`${producto.cantidad}`, 100, y);
-      doc.text(`${producto.precioUnitario}`, 130, y);
-      doc.text(`${producto.total}`, 180, y);
-      totalIVA += producto.iva;
-      y += 10; // Incrementar la posición en y para el próximo producto
-    });
+      // Agregar sección de detalles y conceptos
+      doc.setTextColor(255); // Blanco
+      doc.text("Descripción", 15, 95);
+      doc.text("Cantidad", 100, 95);
+      doc.text("Precio X und", 120, 95);
+      doc.text("Total", 180, 95);
+      doc.setTextColor(0); // Negro
+      let y = 105; // Variable para controlar la posición en y
+      let totalIVA = 0;
+      productosFacturados.forEach((producto, index) => {
+        doc.text(`${producto.descripcion}`, 15, y);
+        doc.text(`${producto.cantidad}`, 100, y);
+        doc.text(`${producto.precioUnitario}`, 130, y);
+        doc.text(`${producto.total}`, 180, y);
+        totalIVA += producto.iva;
+        y += 10; // Incrementar la posición en y para el próximo producto
+      });
 
-     //recta del final de productos
-    doc.setDrawColor(0, 51, 102);
-    doc.setLineWidth(0.5);
-    doc.line(10, 225, 200, 225);
+      //recta del final de productos
+      doc.setDrawColor(0, 51, 102);
+      doc.setLineWidth(0.5);
+      doc.line(10, 225, 200, 225);
 
-    // Obtener el total de la factura
-    const totalFactura = productosFacturados.reduce((total, producto) => total + producto.total, 0);
-    const subtotal = totalFactura - totalIVA;
-    doc.rect(145, 235, 50, 10);
-    doc.text(`Subtotal: $${subtotal.toFixed(0)}`, 150, 240);
+      // Obtener el total de la factura
+      const totalFactura = productosFacturados.reduce(
+        (total, producto) => total + producto.total,
+        0
+      );
+      const subtotal = totalFactura - totalIVA;
+      doc.rect(145, 235, 50, 10);
+      doc.text(`Subtotal: $${subtotal.toFixed(0)}`, 150, 240);
 
-    doc.rect(145, 245, 50, 10);
-    doc.text(`Total IVA: $${totalIVA.toFixed(0)}`, 150, 250);
+      doc.rect(145, 245, 50, 10);
+      doc.text(`Total IVA: $${totalIVA.toFixed(0)}`, 150, 250);
 
-    doc.rect(145, 255, 50, 10);
-    doc.text(`Total Factura: $${totalFactura.toFixed(0)}`, 150, 260);
+      doc.rect(145, 255, 50, 10);
+      doc.text(`Total Factura: $${totalFactura.toFixed(0)}`, 150, 260);
 
-// Agregar mensajes adicionales obtenidos mediante consulta Axios
-    const mensajesAdicionales = await obtenerMensajesAdicionales();
+      // Agregar mensajes adicionales obtenidos mediante consulta Axios
+      const mensajesAdicionales = await obtenerMensajesAdicionales();
 
-    doc.text(mensajesAdicionales.mensaje1, 15, 240);
-    doc.text(mensajesAdicionales.mensaje2, 15, 250);
-    doc.text(mensajesAdicionales.mensaje3, 15, 260)
+      doc.text(mensajesAdicionales.mensaje1, 15, 240);
+      doc.text(mensajesAdicionales.mensaje2, 15, 250);
+      doc.text(mensajesAdicionales.mensaje3, 15, 260);
 
-    //recta del final
-    doc.setLineWidth(0.5);
-    doc.line(10, 285, 200, 285);
+      //recta del final
+      doc.setLineWidth(0.5);
+      doc.line(10, 285, 200, 285);
 
-    //mensaje final
-    doc.text(mensajesAdicionales.mensaje4, 85, 290);
+      //mensaje final
+      doc.text(mensajesAdicionales.mensaje4, 85, 290);
 
-    // Guardar el PDF con el número de factura como nombre del archivo
-    doc.save(`${numActual}.pdf`);
+      // Guardar el PDF con el número de factura como nombre del archivo
+      doc.save(`${numActual}.pdf`);
+    } catch (error) {
+      console.error("Error al generar el PDF:", error);
+    }
+  };
 
-  } catch (error) {
-    console.error('Error al generar el PDF:', error);
-  }
-};
-
-
-
-  
-const obtenerMensajesAdicionales = async () => {
-  try {
+  const obtenerMensajesAdicionales = async () => {
+    try {
       // Hacer la consulta Axios para obtener los mensajes adicionales
-      const response = await axios.get('http://localhost:3000/api/config/mensajes');
+      const response = await axios.get(
+        "http://localhost:3000/api/config/mensajes"
+      );
       const mensajes = response.data;
 
       // Acceder a cada mensaje individualmente
@@ -374,15 +418,11 @@ const obtenerMensajesAdicionales = async () => {
       const mensaje4 = mensajes.mensaje4;
 
       return { mensaje1, mensaje2, mensaje3, mensaje4 };
-  } catch (error) {
-      console.error('Error al obtener los mensajes adicionales:', error);
+    } catch (error) {
+      console.error("Error al obtener los mensajes adicionales:", error);
       return {}; // Retornar un objeto vacío en caso de error
-  }
-};
-  
-  
-  
-
+    }
+  };
 
   return (
     <div className="container principal">
@@ -392,13 +432,20 @@ const obtenerMensajesAdicionales = async () => {
             {empresa && (
               <>
                 <div>
-                  <label htmlFor="nombre" style={{ color: 'blue', fontSize: '1.8em' }}>{empresa.nombre}</label>
+                  <label
+                    htmlFor="nombre"
+                    style={{ color: "blue", fontSize: "1.8em" }}
+                  >
+                    {empresa.nombre}
+                  </label>
                 </div>
                 <div>
                   <label htmlFor="nit">NIT: {empresa.nit}</label>
                 </div>
                 <div>
-                  <label htmlFor="direccion">Dirección: {empresa.direccion}</label>
+                  <label htmlFor="direccion">
+                    Dirección: {empresa.direccion}
+                  </label>
                 </div>
                 <div>
                   <label htmlFor="telefono">Teléfono: {empresa.telefono}</label>
@@ -461,75 +508,86 @@ const obtenerMensajesAdicionales = async () => {
         </div>
         <div className="col-md-6">
           <div className="total-box">
-            <div className="total-header" style={{ backgroundColor: 'blue', color: 'white', textAlign: 'center' }}>
+            <div
+              className="total-header"
+              style={{
+                backgroundColor: "blue",
+                color: "white",
+                textAlign: "center",
+              }}
+            >
               Total Factura
             </div>
-            <div className="total-value" style={{ textAlign: 'center' }}>
-              {`$ ${totalFactura.toFixed()}`} {/* Mostrar el valor total de la factura en pesos colombianos */}
+            <div className="total-value" style={{ textAlign: "center" }}>
+              {`$ ${totalFactura.toFixed()}`}{" "}
+              {/* Mostrar el valor total de la factura en pesos colombianos */}
             </div>
           </div>
         </div>
       </section>
       <section className="seccion-productos">
         <h2>Producto a Facturar</h2>
-        <div >
+        <div>
           <label htmlFor="Código">Código</label>
-          <input 
-            type="text" 
-            className="input-cod" 
-            placeholder="Código del Producto" 
-            aria-label="Código" 
-            aria-describedby="basic-addon1" 
+          <input
+            type="text"
+            className="input-cod"
+            placeholder="Código del Producto"
+            aria-label="Código"
+            aria-describedby="basic-addon1"
             value={codigo}
             onChange={mCambiosCod}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') {
+              if (event.key === "Enter") {
                 mBusquedaCod(event);
               }
             }}
-            ref={codigoRef} 
+            ref={codigoRef}
             required
           />
         </div>
-        <div >
+        <div>
           <label htmlFor="Descripcion">Descripcion</label>
-          <input 
-            type="text" 
-            className="input-des" 
-            placeholder="Descripcion" 
-            value={producto ? producto.descripcion : ''}
-            aria-label="Descripcion" 
-            aria-describedby="basic-addon1" disabled 
+          <input
+            type="text"
+            className="input-des"
+            placeholder="Descripcion"
+            value={producto ? producto.descripcion : ""}
+            aria-label="Descripcion"
+            aria-describedby="basic-addon1"
+            disabled
           />
         </div>
-        <br/>
-        <div >
+        <br />
+        <div>
           <label htmlFor="Cantidad">Cantidad</label>
-          <input 
-            type="number" 
-            className="input-can" 
-            placeholder="Cantidad" 
+          <input
+            type="number"
+            className="input-can"
+            placeholder="Cantidad"
             value={cantidad}
             onChange={mCambiosCan}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') {
+              if (event.key === "Enter") {
                 mOpercacionesCan(event);
               }
             }}
-            aria-label="Cantidad" 
-            aria-describedby="basic-addon1" 
-            ref={cantidadRef} required
+            aria-label="Cantidad"
+            aria-describedby="basic-addon1"
+            ref={cantidadRef}
+            required
           />
-         </div>
-        <div >
+        </div>
+        <div>
           <label htmlFor="Precio">Precio</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             className="input-pre"
-            placeholder="Precio" 
-            value={producto ? producto.precio : ''}
-            aria-label="Precio" 
-            aria-describedby="basic-addon1" disabled 
+            placeholder="Precio"
+            value={producto ? producto.precio : ""}
+            aria-label="Precio"
+            aria-describedby="basic-addon1"
+            disabled
           />
         </div>
         {error && (
@@ -571,13 +629,104 @@ const obtenerMensajesAdicionales = async () => {
         </table>
       </section>
       <div className="seccion-botones">
-        <button className="btn btn-primary" onClick={guardarFactura}>Guardar Factura</button>
-        <button type="button" className="btn btn-secondary" onClick={resetValores}>Cancelar</button>
-        
+        <button className="btn btn-primary" onClick={guardarFactura}>
+          Guardar Factura
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={resetValores}
+        >
+          Cancelar
+        </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            Buscar Factura
+          </button>
       </div>
+
+      {/* Modal para mostrar la factura encontrada */}
+      {showModal2 && (
+        <div className="modal show" tabIndex="-1" style={{ display: "block" }}>
+          <div className="modal-dialog modal-lg"> {/* Tamaño grande del modal */}
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Factura Encontrada</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowModal2(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                {/* Integra el componente FacturaTable y pasa la factura encontrada como prop */}
+                {facturaEncontrada && (
+                  <FacturaTable factura={facturaEncontrada.factura} />
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowModal2(false)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal */}
+      {showModal && (
+        <div className="modal show" tabIndex="-1" style={{ display: "block" }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Buscar Factura</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <label htmlFor="buscarNumeroFactura" className="form-label">
+                  Número de Factura:
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="buscarNumeroFactura"
+                  value={searchNumFactura}
+                  onChange={(e) => setSearchNumFactura(e.target.value)}
+                />
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={buscarFactura}
+                >
+                  Buscar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default Facturacion;
-
