@@ -32,7 +32,7 @@ function Navbar({ nombre, setAuthenticated, setToken, setNombre }) {
     <div className="Home">
       <nav className="navbar navbar-expand-lg bg-body-tertiary">
         <div className="container-fluid">
-          <a className="navbar-brand" href="/facturacion">Facturacion</a>
+          <Link className="navbar-brand" to="/facturacion">Facturacion</Link>
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>
@@ -42,16 +42,16 @@ function Navbar({ nombre, setAuthenticated, setToken, setNombre }) {
                 <Link className="nav-link" to="/home">Home</Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link active" aria-current="page" href="/clientes">Clientes</a>
+                <Link className="nav-link active" aria-current="page" to="/clientes">Clientes</Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/productos">Productos</a>
+                <Link className="nav-link" to="/productos">Productos</Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/empleados">Empleados</a>
+                <Link className="nav-link" to="/empleados">Empleados</Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/configuraciones">Configuraciones</a>
+                <Link className="nav-link" to="/configuraciones">Configuraciones</Link>
               </li>
             </ul>
             <div className="navbar-brand ms-auto ">

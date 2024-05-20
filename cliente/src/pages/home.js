@@ -1,6 +1,7 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../css/estilos-home.css';
+import { Link } from 'react-router-dom'
 
 function Home({ nombre }) {
   return (
@@ -10,7 +11,7 @@ function Home({ nombre }) {
           <div className="row">
             <div className="col-12 col-md-6 col-lg-4">
               <div className="menu">
-                <a href="/facturacion"><img src="facturacion.png" alt="logo facturacion" /></a> 
+                <Link to="/facturacion"><img src="facturacion.png" alt="logo facturacion" /></Link> 
                 <div className="overlay">
                   <p>Facturacion</p>
                 </div>
@@ -19,7 +20,7 @@ function Home({ nombre }) {
 
             <div className="col-12 col-md-6 col-lg-4">
               <div className="menu">
-              <a href="/clientes"><img src="cliente.png" alt="logo clientes" /></a>
+              <Link to="/clientes"><img src="cliente.png" alt="logo clientes" /></Link>
               <div className="overlay">
                 <p>Clientes</p>
               </div>
@@ -28,7 +29,7 @@ function Home({ nombre }) {
 
             <div className="col-12 col-md-6 col-lg-4">
               <div className="menu">
-              <a href="/productos"><img src="productos.png" alt="logo productos" /></a>
+              <Link to="/productos"><img src="productos.png" alt="logo productos" /></Link>
               <div className="overlay">
                 <p>Productos</p>
               </div>
@@ -37,7 +38,7 @@ function Home({ nombre }) {
 
             <div className="col-12 col-md-6 col-lg-4">
               <div className="menu">
-              <a href="/empleados"><img src="empleado.png" alt="logo empleados" /></a>
+              <Link to="/empleados"><img src="empleado.png" alt="logo empleados" /></Link>
               <div className="overlay">
                 <p>Empleados</p>
               </div>
@@ -46,7 +47,7 @@ function Home({ nombre }) {
 
             <div className="col-12 col-md-6 col-lg-4">
               <div className="menu">
-              <a href="/configuraciones"><img src="configuraciones.png" alt="logo configuraciones" /></a>
+              <Link to="/configuraciones"><img src="configuraciones.png" alt="logo configuraciones" /></Link>
               <div className="overlay">
                 <p>Configurciones</p>
               </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import { HashRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import Home from './pages/home';
 import Login from './pages/login';
 import Navbar from './pages/navbar';
@@ -15,7 +15,6 @@ function App() {
   const [nombre, setNombre] = useState('');
 
   useEffect(() => {
-    // Verifica si hay un token almacenado en localStorage al cargar la aplicación
     const storedToken = localStorage.getItem('token');
     const storedNombre = localStorage.getItem('nombre');
 
@@ -24,7 +23,7 @@ function App() {
       setNombre(storedNombre);
       setAuthenticated(true);
     }
-  }, []); // El segundo argumento [] asegura que este efecto se ejecute solo una vez al cargar la aplicación
+  }, []);
 
   return (
     <Router>
@@ -32,7 +31,6 @@ function App() {
         <Route path="/login">
           <Login setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
         </Route>
-
         <Route path="/home">
           {authenticated ? (
             <>
@@ -44,40 +42,55 @@ function App() {
           )}
         </Route>
         <Route path="/clientes">
-          <>
-            <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
-            <Clientes nombre={nombre} />
-          </>
+          {authenticated ? (
+            <>
+              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Clientes nombre={nombre} />
+            </>
+          ) : (
+            <Redirect to="/login" />
+          )}
         </Route>
-
         <Route path="/productos">
-          <>
-            <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
-            <Productos nombre={nombre} />
-          </>
+          {authenticated ? (
+            <>
+              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Productos nombre={nombre} />
+            </>
+          ) : (
+            <Redirect to="/login" />
+          )}
         </Route>
-
         <Route path="/facturacion">
-          <>
-            <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
-            <Facturacion nombre={nombre} />
-          </>
+          {authenticated ? (
+            <>
+              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Facturacion nombre={nombre} />
+            </>
+          ) : (
+            <Redirect to="/login" />
+          )}
         </Route>
-
         <Route path="/configuraciones">
-          <>
-            <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
-            <Configuraciones nombre={nombre} />
-          </>
+          {authenticated ? (
+            <>
+              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Configuraciones nombre={nombre} />
+            </>
+          ) : (
+            <Redirect to="/login" />
+          )}
         </Route>
-
         <Route path="/empleados">
-          <>
-            <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
-            <Empleados nombre={nombre} />
-          </>
+          {authenticated ? (
+            <>
+              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Empleados nombre={nombre} />
+            </>
+          ) : (
+            <Redirect to="/login" />
+          )}
         </Route>
-
         <Redirect exact from="/" to="/login" />
       </Switch>
     </Router>
@@ -85,4 +98,3 @@ function App() {
 }
 
 export default App;
-
