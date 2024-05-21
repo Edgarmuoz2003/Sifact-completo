@@ -9,20 +9,21 @@ loginCtrl.login = async (req, res) => {
     const { documento, contrasenia } = req.body;
 
     try {
-        const empleado = await Empledo.findOne({ documento })
+        const empleado = await Empledo.findOne({ documento });
 
         if(empleado && bcrypt.compareSync(contrasenia, empleado.contrasenia)) {
-            const token = jwt.sign({ usuario: empleado.nombre }, secretKey, { expiresIn: '1h' } )
-            const { nombre } = empleado;
-            res.status(200).json({ token, nombre })
-        }else{
-            res.json({ message: 'Credenciales Incorrectas' })
+            const token = jwt.sign({ usuario: empleado.nombre }, secretKey, { expiresIn: '1h' });
+            const { nombre, cargo } = empleado; // Agregando cargo aquí
+            res.status(200).json({ token, nombre, cargo });
+        } else {
+            res.json({ message: 'Credenciales Incorrectas' });
         }
     } catch (error) {
         console.error(error);
         res.status(500).send('Error en el Servidor');
     }
-}
+};
+
 
 loginCtrl.logout = (req, res) => {
     try {

@@ -3,7 +3,7 @@ const productoCtrl = {};
 
 //metodo para crear nuevos productos
 productoCtrl.createProductos = async(req, res) => {
-    const { codigo, descripcion, precio, impuesto, cantidad } = req.body
+    const { codigo, descripcion, precio, impuesto, stock } = req.body
 
     try {
         const producto = new Producto({
@@ -11,7 +11,7 @@ productoCtrl.createProductos = async(req, res) => {
             descripcion,
             precio,
             impuesto,
-            cantidad
+            stock
         })
 
         await producto.save()
@@ -62,7 +62,7 @@ productoCtrl.updateProductos = async(req, res) => {
         descripcion: req.body.descripcion,
         precio: req.body.precio,
         impuesto: req.body.impuesto,
-        cantidad: req.body.cantidad
+        stock: req.body.stock
     }
 
     try {

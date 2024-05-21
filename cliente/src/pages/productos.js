@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 
 function Productos() {
   const [agregar, setAgregar] = useState(false);
+  const [entrada, setEntrada] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [id, setId] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -14,22 +15,47 @@ function Productos() {
   const [impuesto, setImpuesto] = useState();
   const [productos, setProductos] = useState(null); 
   const [editar, setEditar] = useState(false);
+  const [stock, setStock] = useState("");
+  const [editarStock, setEditarStock] = useState(false);
+
+
+  const cargoUsuarioActual = localStorage.getItem('cargo');
 
   //metodos principales
   //metodo para agregar
   const add = async (event) => {
     event.preventDefault();
     try {
+      // Consulta al backend para obtener todos los productos
+      const response = await axios.get("http://localhost:3000/api/productos");
+      const productos = response.data;
+  
+      // Verificar si ya existe un producto con el mismo código
+      const productoExistente = productos.find(producto => producto.codigo === codigo);
+      if (productoExistente) {
+        Swal.fire({
+          title: "Error!",
+          text: "Ya existe un producto con ese código",
+          icon: "error",
+          timer: 3000
+        });
+        return; // Salir de la función si ya existe un producto con el mismo código
+      }
+  
+      // Si no existe, proceder a agregar el nuevo producto
       await axios.post("http://localhost:3000/api/productos", {
         codigo: codigo,
         descripcion: descripcion,
         precio: precio,
-        impuesto: impuesto
+        impuesto: impuesto,
+        stock: stock
       });
+  
+      // Limpiar campos y mostrar mensaje de éxito
       await limpiarCampos();
       Swal.fire({
         title: "Registro Exitoso!",
-        html: "<i>se a agregado <strong>" + descripcion + "</strong>  a la lista de productos </i>",
+        html: "<i>Se ha agregado <strong>" + descripcion + "</strong> a la lista de productos </i>",
         icon: "success",
         timer: 3000
       });
@@ -37,6 +63,7 @@ function Productos() {
       console.error("Error al agregar el producto:", error);
     }
   };
+  
 
   //metodo para buscar un cliente
   const buscarProducto = async () => {
@@ -60,7 +87,7 @@ function Productos() {
     }
   };
 
-  //metodo para actualizar empleado
+  //metodo para actualizar productos
   const update = async (event) => {
     event.preventDefault();
 
@@ -69,7 +96,8 @@ function Productos() {
       codigo: codigo,
       descripcion: descripcion,
       precio: precio,
-      impuesto: impuesto
+      impuesto: impuesto,
+      stock: stock
     });
     await limpiarCampos();
     setProductos(null); 
@@ -81,7 +109,7 @@ function Productos() {
     });
   };
 
-  //metodo para eliminar clientes
+  //metodo para eliminar producos
   const borrar = (producto) => {
     Swal.fire({
       title: "confirmar?",
@@ -107,9 +135,24 @@ function Productos() {
     });
   };
 
+  const modificarStock = async () => {
+    if (cargoUsuarioActual === 'admin') {
+        setEditarStock(true)
+        
+    } else {
+        alert('No tienes permisos para modificar el stock.');
+    }
+};
+
+
+
   //metodos secundarios
   const mostrarAgregar = () => {
     setAgregar(!agregar);
+  }; 
+
+  const mostrarEntrada = () => {
+    setEntrada(!entrada);
   }; 
 
   const limpiarCampos = () => {
@@ -117,6 +160,7 @@ function Productos() {
     setDescripcion("");
     setPrecio("");
     setImpuesto("");
+    setStock("");
     setEditar(false);
   };
 
@@ -126,6 +170,7 @@ function Productos() {
     setDescripcion(producto.descripcion);
     setPrecio(producto.precio);
     setImpuesto(producto.impuesto);
+    setStock(producto.stock);
     setId(producto._id);
   };
 
@@ -217,7 +262,24 @@ function Productos() {
                 />
               </div>
 
+              <div className="input-group mb-3">
+                <span className="input-group-text" id="basic-addon1">Stock</span>
+                <input
+                  onChange={(event) => {
+                    setStock(event.target.value);
+                  }}
+                  type="number"
+                  className="form-control"
+                  value={stock}
+                  placeholder="Ingrese cantidad Inicial"
+                  aria-label="stock"
+                  aria-describedby="basic-addon1"
+                  required
+                />
+              </div>
+
               <button type="submit" className="btn btn-primary" onClick={add}>Agregar</button>
+              <button type="submit" className="btn btn-danger" onClick={limpiarCampos}>Cancelar</button>
             </form>
           </div>
         ) : (
@@ -239,6 +301,7 @@ function Productos() {
                 />
               </div>
 
+            
               {editar ? (
                 <>
                   <div className="input-group mb-3">
@@ -253,6 +316,7 @@ function Productos() {
                       placeholder="Ingrese la descripcion del producto"
                       aria-label="descripcion"
                       aria-describedby="basic-addon1"
+                      disabled
                       required
                     />
                   </div>
@@ -288,9 +352,26 @@ function Productos() {
                       required
                     />
                   </div>
+
+                  <div className="input-group mb-3">
+                    <span className="input-group-text" id="basic-addon1">Stock</span>
+                    <input
+                      onChange={(event) => {
+                        setStock(event.target.value);
+                      }}
+                      type="number"
+                      className="form-control"
+                      value={stock}
+                      aria-label="stock"
+                      aria-describedby="basic-addon1"
+                      disabled
+                      required
+                    />
+                  </div>
                   <button type="button" className="btn btn-primary" onClick={update}>
                     Guardar Cambios
                   </button>
+                  <button type="submit" className="btn btn-danger" onClick={limpiarCampos}>Cancelar</button>
 
                 </>
               ) : (
@@ -307,6 +388,7 @@ function Productos() {
                           <th>Descripcion</th>
                           <th>Precio de venta</th>
                           <th>% de Impuesto</th>
+                          <th>Stock Actual</th>
                           <th>Acciones</th>
                         </tr>
                       </thead>
@@ -316,18 +398,93 @@ function Productos() {
                           <td>{productos.descripcion}</td>
                           <td>{productos.precio}</td>
                           <td>{productos.impuesto}</td>
+                          <td>{productos.stock}</td>
                           <td>
                             <div className="btn-group" role="group" aria-label="Basic mixed styles example">
                               <button type="button" className="btn btn-info" onClick={(event) => editarProducto(productos)}>Actualizar</button>
                               <button type="button" onClick={() => borrar(productos)} className="btn btn-danger">Eliminar</button>
+                              <button type="button" onClick={() => modificarStock()} className="btn btn-danger">Actualizar Stoks</button>
                             </div>
                           </td>
                         </tr>
                       </tbody>
                     </table>
                   )}
+
+                  {editarStock ? (
+                    <div className="card-body">
+
+                    <div className="form-check form-switch d-flex align-items-center">
+                      <input
+                         className="form-check-input"
+                         type="checkbox"
+                         role="switch"
+                         id="flexSwitchCheckChecked"
+                         checked={entrada}
+                         onChange={mostrarEntrada}
+                       />
+                        <label className="form-check-label ms-2" htmlFor="flexSwitchCheckChecked">
+                          {entrada ? 'Entrada de stok' : 'Salida de stock'}
+                        </label>
+                    </div>
+
+                    {entrada ? (
+                      <form>
+                        
+                      <div className="input-group mb-3">
+                        <span className="input-group-text" id="basic-addon1">Stock</span>
+                        <input
+                          onChange={(event) => {
+                            setStock(event.target.value);
+                          }}
+                          type="number"
+                          className="form-control"
+                          value={stock}
+                          placeholder="Ingrese la Cantidad"
+                          aria-label="stock"
+                          aria-describedby="basic-addon1"
+                          required
+                        />
+                      </div>
+
+                      <button type="button" className="btn btn-primary">
+                        Guardar Entrada
+                      </button>
+                    </form>
+
+                    ): (
+                      <form>
+                        
+                        <div className="input-group mb-3">
+                          <span className="input-group-text" id="basic-addon1">Stock</span>
+                          <input
+                            onChange={(event) => {
+                              setStock(event.target.value);
+                            }}
+                            type="number"
+                            className="form-control"
+                            value={stock}
+                            placeholder="Ingrese la Cantidad"
+                            aria-label="stock"
+                            aria-describedby="basic-addon1"
+                            required
+                          />
+                        </div>
+
+                        <button type="button" className="btn btn-primary">
+                          Guardar Salida
+                        </button>
+                      </form>
+                    )}
+
+
+                      
+                    </div>
+                  ) : null }
+
+
                 </>
-              )}
+              )}             
             </form>
           </div>
         )}
