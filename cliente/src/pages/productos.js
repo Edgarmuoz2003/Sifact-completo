@@ -1,9 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useState } from 'react';
 import axios from 'axios';
-import '../css/estilos-empleados.css';
 import Swal from 'sweetalert2';
+import '../css/estilos-empleados.css';
 
 function Productos() {
   const [agregar, setAgregar] = useState(false);
@@ -11,26 +10,22 @@ function Productos() {
   const [codigo, setCodigo] = useState("");
   const [id, setId] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [precio, setPrecio] = useState();
-  const [impuesto, setImpuesto] = useState();
-  const [productos, setProductos] = useState(null); 
+  const [precio, setPrecio] = useState("");
+  const [impuesto, setImpuesto] = useState("");
+  const [productos, setProductos] = useState(null);
   const [editar, setEditar] = useState(false);
   const [stock, setStock] = useState("");
   const [editarStock, setEditarStock] = useState(false);
 
-
   const cargoUsuarioActual = localStorage.getItem('cargo');
 
-  //metodos principales
-  //metodo para agregar
+  // Método para agregar un nuevo producto
   const add = async (event) => {
     event.preventDefault();
     try {
-      // Consulta al backend para obtener todos los productos
       const response = await axios.get("http://localhost:3000/api/productos");
       const productos = response.data;
   
-      // Verificar si ya existe un producto con el mismo código
       const productoExistente = productos.find(producto => producto.codigo === codigo);
       if (productoExistente) {
         Swal.fire({
@@ -39,10 +34,9 @@ function Productos() {
           icon: "error",
           timer: 3000
         });
-        return; // Salir de la función si ya existe un producto con el mismo código
+        return;
       }
   
-      // Si no existe, proceder a agregar el nuevo producto
       await axios.post("http://localhost:3000/api/productos", {
         codigo: codigo,
         descripcion: descripcion,
@@ -51,11 +45,10 @@ function Productos() {
         stock: stock
       });
   
-      // Limpiar campos y mostrar mensaje de éxito
       await limpiarCampos();
       Swal.fire({
         title: "Registro Exitoso!",
-        html: "<i>Se ha agregado <strong>" + descripcion + "</strong> a la lista de productos </i>",
+        html: `<i>Se ha agregado <strong>${descripcion}</strong> a la lista de productos </i>`,
         icon: "success",
         timer: 3000
       });
@@ -63,20 +56,17 @@ function Productos() {
       console.error("Error al agregar el producto:", error);
     }
   };
-  
 
-  //metodo para buscar un cliente
+  // Método para buscar un producto
   const buscarProducto = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/productos/${codigo}`);
       const producto = response.data;
-      setProductos(producto); 
+      setProductos(producto);
       limpiarCampos();
     } catch (error) {
       console.error("Error al buscar el producto:", error);
-      
       if (error.response && error.response.status === 404) {
-        // Mostrar SweetAlert para indicar que el cliente no fue encontrado
         Swal.fire({
           title: "Producto no encontrado",
           text: "No se encontró ningún Producto con ese código.",
@@ -87,73 +77,110 @@ function Productos() {
     }
   };
 
-  //metodo para actualizar productos
+  // Método para actualizar productos
   const update = async (event) => {
     event.preventDefault();
-
-    await axios.patch("http://localhost:3000/api/productos/" + id, {
-      id: id,
-      codigo: codigo,
-      descripcion: descripcion,
-      precio: precio,
-      impuesto: impuesto,
-      stock: stock
-    });
-    await limpiarCampos();
-    setProductos(null); 
-    Swal.fire({
-      title: "Actualizacion Exitosa!",
-      html: "<i>El producto <strong>" + descripcion + "</strong>  fue Actualizado con exito </i>",
-      icon: "success",
-      timer: 3000
-    });
+    try {
+      await axios.patch(`http://localhost:3000/api/productos/${id}`, {
+        codigo: codigo,
+        descripcion: descripcion,
+        precio: precio,
+        impuesto: impuesto,
+        stock: stock
+      });
+      await limpiarCampos();
+      setProductos(null);
+      Swal.fire({
+        title: "Actualizacion Exitosa!",
+        html: `<i>El producto <strong>${descripcion}</strong> fue Actualizado con éxito</i>`,
+        icon: "success",
+        timer: 3000
+      });
+    } catch (error) {
+      console.error("Error al actualizar el producto:", error);
+    }
   };
 
-  //metodo para eliminar producos
-  const borrar = (producto) => {
+  // Método para eliminar productos
+  const borrar = async (producto) => {
     Swal.fire({
-      title: "confirmar?",
-      text: "confirmas que quieres eliminar a " + producto.descripcion + " ?",
+      title: "Confirmar?",
+      text: `¿Confirmas que quieres eliminar a ${producto.descripcion}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Si, eliminar!"
-    }).then((result) => {
+      confirmButtonText: "Sí, eliminar!"
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        axios.delete(`http://localhost:3000/api/productos/${producto._id}`).then(() => {
+        try {
+          await axios.delete(`http://localhost:3000/api/productos/${producto._id}`);
           limpiarCampos();
-          setProductos(null); 
+          setProductos(null);
           Swal.fire({
             title: "Eliminado!",
-            text: producto.descripcion + ' fue eliminado',
+            text: `${producto.descripcion} fue eliminado`,
             icon: "success",
             timer: 3000
           });
-        });
+        } catch (error) {
+          console.error("Error al eliminar el producto:", error);
+        }
       }
     });
   };
 
-  const modificarStock = async () => {
+  
+  const modificarStock = (producto) => {
     if (cargoUsuarioActual === 'admin') {
-        setEditarStock(true)
-        
+      setProductos(producto);
+      setEditarStock(true);
     } else {
-        alert('No tienes permisos para modificar el stock.');
+      Swal.fire({
+        title: "Permiso denegado",
+        text: "No tienes permisos para modificar el stock.",
+        icon: "error",
+        timer: 3000
+      });
     }
-};
+  };
 
+  const guardarStock = async () => {
+    try {
+      let nuevoStock;
+      if (entrada) {
+        nuevoStock = parseInt(productos.stock) + parseInt(stock);
+      } else {
+        nuevoStock = parseInt(productos.stock) - parseInt(stock);
+      }
+      await axios.patch(`http://localhost:3000/api/productos/${productos._id}`, {
+        stock: nuevoStock
+      });
+      setProductos({ ...productos, stock: nuevoStock });
+      setEditarStock(false);
+      Swal.fire({
+        title: "Actualización de Stock Exitosa!",
+        text: `El stock de ${productos.descripcion} ha sido actualizado.`,
+        icon: "success",
+        timer: 3000
+      });
+    } catch (error) {
+      console.error("Error al actualizar el stock:", error);
+    }
+  };
 
+  const cancelarStock = () => {
+    setEditarStock(false);
+    setStock("");
+  };
 
-  //metodos secundarios
   const mostrarAgregar = () => {
     setAgregar(!agregar);
-  }; 
+  };
 
   const mostrarEntrada = () => {
     setEntrada(!entrada);
-  }; 
+  };
 
   const limpiarCampos = () => {
     setCodigo("");
@@ -201,9 +228,7 @@ function Productos() {
               <div className="input-group mb-3">
                 <span className="input-group-text" id="basic-addon1">Codigo</span>
                 <input
-                  onChange={(event) => {
-                    setCodigo(event.target.value);
-                  }}
+                  onChange={(event) => setCodigo(event.target.value)}
                   type="text"
                   className="form-control"
                   value={codigo}
@@ -217,9 +242,7 @@ function Productos() {
               <div className="input-group mb-3">
                 <span className="input-group-text" id="basic-addon1">Descripcion</span>
                 <input
-                  onChange={(event) => {
-                    setDescripcion(event.target.value);
-                  }}
+                  onChange={(event) => setDescripcion(event.target.value)}
                   type="text"
                   className="form-control"
                   value={descripcion}
@@ -233,9 +256,7 @@ function Productos() {
               <div className="input-group mb-3">
                 <span className="input-group-text" id="basic-addon1">Precio</span>
                 <input
-                  onChange={(event) => {
-                    setPrecio(event.target.value);
-                  }}
+                  onChange={(event) => setPrecio(event.target.value)}
                   type="number"
                   className="form-control"
                   value={precio}
@@ -249,9 +270,7 @@ function Productos() {
               <div className="input-group mb-3">
                 <span className="input-group-text" id="basic-addon1">% de Impuesto</span>
                 <input
-                  onChange={(event) => {
-                    setImpuesto(event.target.value);
-                  }}
+                  onChange={(event) => setImpuesto(event.target.value)}
                   type="number"
                   className="form-control"
                   value={impuesto}
@@ -265,9 +284,7 @@ function Productos() {
               <div className="input-group mb-3">
                 <span className="input-group-text" id="basic-addon1">Stock</span>
                 <input
-                  onChange={(event) => {
-                    setStock(event.target.value);
-                  }}
+                  onChange={(event) => setStock(event.target.value)}
                   type="number"
                   className="form-control"
                   value={stock}
@@ -279,7 +296,7 @@ function Productos() {
               </div>
 
               <button type="submit" className="btn btn-primary" onClick={add}>Agregar</button>
-              <button type="submit" className="btn btn-danger" onClick={limpiarCampos}>Cancelar</button>
+              <button type="button" className="btn btn-danger" onClick={limpiarCampos}>Cancelar</button>
             </form>
           </div>
         ) : (
@@ -288,9 +305,7 @@ function Productos() {
               <div className="input-group mb-3">
                 <span className="input-group-text" id="basic-addon1">Codigo</span>
                 <input
-                  onChange={(event) => {
-                    setCodigo(event.target.value);
-                  }}
+                  onChange={(event) => setCodigo(event.target.value)}
                   type="text"
                   className="form-control"
                   value={codigo}
@@ -301,15 +316,12 @@ function Productos() {
                 />
               </div>
 
-            
               {editar ? (
                 <>
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">Descripcion</span>
                     <input
-                      onChange={(event) => {
-                        setDescripcion(event.target.value);
-                      }}
+                      onChange={(event) => setDescripcion(event.target.value)}
                       type="text"
                       className="form-control"
                       value={descripcion}
@@ -324,9 +336,7 @@ function Productos() {
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">Precio</span>
                     <input
-                      onChange={(event) => {
-                        setPrecio(event.target.value);
-                      }}
+                      onChange={(event) => setPrecio(event.target.value)}
                       type="number"
                       className="form-control"
                       value={precio}
@@ -340,9 +350,7 @@ function Productos() {
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">% de Impuesto</span>
                     <input
-                      onChange={(event) => {
-                        setImpuesto(event.target.value);
-                      }}
+                      onChange={(event) => setImpuesto(event.target.value)}
                       type="number"
                       className="form-control"
                       value={impuesto}
@@ -356,9 +364,7 @@ function Productos() {
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">Stock</span>
                     <input
-                      onChange={(event) => {
-                        setStock(event.target.value);
-                      }}
+                      onChange={(event) => setStock(event.target.value)}
                       type="number"
                       className="form-control"
                       value={stock}
@@ -371,7 +377,7 @@ function Productos() {
                   <button type="button" className="btn btn-primary" onClick={update}>
                     Guardar Cambios
                   </button>
-                  <button type="submit" className="btn btn-danger" onClick={limpiarCampos}>Cancelar</button>
+                  <button type="button" className="btn btn-danger" onClick={limpiarCampos}>Cancelar</button>
 
                 </>
               ) : (
@@ -401,9 +407,9 @@ function Productos() {
                           <td>{productos.stock}</td>
                           <td>
                             <div className="btn-group" role="group" aria-label="Basic mixed styles example">
-                              <button type="button" className="btn btn-info" onClick={(event) => editarProducto(productos)}>Actualizar</button>
+                              <button type="button" className="btn btn-info" onClick={() => editarProducto(productos)}>Actualizar</button>
                               <button type="button" onClick={() => borrar(productos)} className="btn btn-danger">Eliminar</button>
-                              <button type="button" onClick={() => modificarStock()} className="btn btn-danger">Actualizar Stoks</button>
+                              <button type="button" onClick={() => modificarStock(productos)} className="btn btn-warning">Actualizar Stock</button>
                             </div>
                           </td>
                         </tr>
@@ -411,56 +417,27 @@ function Productos() {
                     </table>
                   )}
 
-                  {editarStock ? (
+                  {editarStock && (
                     <div className="card-body">
-
-                    <div className="form-check form-switch d-flex align-items-center">
-                      <input
-                         className="form-check-input"
-                         type="checkbox"
-                         role="switch"
-                         id="flexSwitchCheckChecked"
-                         checked={entrada}
-                         onChange={mostrarEntrada}
-                       />
-                        <label className="form-check-label ms-2" htmlFor="flexSwitchCheckChecked">
-                          {entrada ? 'Entrada de stok' : 'Salida de stock'}
-                        </label>
-                    </div>
-
-                    {entrada ? (
-                      <form>
-                        
-                      <div className="input-group mb-3">
-                        <span className="input-group-text" id="basic-addon1">Stock</span>
+                      <div className="form-check form-switch d-flex align-items-center">
                         <input
-                          onChange={(event) => {
-                            setStock(event.target.value);
-                          }}
-                          type="number"
-                          className="form-control"
-                          value={stock}
-                          placeholder="Ingrese la Cantidad"
-                          aria-label="stock"
-                          aria-describedby="basic-addon1"
-                          required
+                          className="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          id="flexSwitchCheckChecked"
+                          checked={entrada}
+                          onChange={mostrarEntrada}
                         />
+                        <label className="form-check-label ms-2" htmlFor="flexSwitchCheckChecked">
+                          {entrada ? 'Entrada de stock' : 'Salida de stock'}
+                        </label>
                       </div>
 
-                      <button type="button" className="btn btn-primary">
-                        Guardar Entrada
-                      </button>
-                    </form>
-
-                    ): (
                       <form>
-                        
                         <div className="input-group mb-3">
                           <span className="input-group-text" id="basic-addon1">Stock</span>
                           <input
-                            onChange={(event) => {
-                              setStock(event.target.value);
-                            }}
+                            onChange={(event) => setStock(event.target.value)}
                             type="number"
                             className="form-control"
                             value={stock}
@@ -471,20 +448,15 @@ function Productos() {
                           />
                         </div>
 
-                        <button type="button" className="btn btn-primary">
-                          Guardar Salida
+                        <button type="button" className="btn btn-primary" onClick={guardarStock}>
+                          Guardar {entrada ? 'Entrada' : 'Salida'}
                         </button>
+                        <button type="button" className="btn btn-danger" onClick={cancelarStock}>Cancelar</button>
                       </form>
-                    )}
-
-
-                      
                     </div>
-                  ) : null }
-
-
+                  )}
                 </>
-              )}             
+              )}
             </form>
           </div>
         )}
