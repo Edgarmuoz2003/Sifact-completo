@@ -15,31 +15,39 @@ function Empleados({ nombre }) {
   const [empleado, setEmpleado] = useState(null)
   const [editar, setEditar] = useState(false);
 
+  const cargoUsuarioActual = localStorage.getItem('cargo');
+
   //metodos principales
-//metodo para agregar
   const add = async (event) => {
     event.preventDefault();
-    try {
-      await axios.post("http://localhost:3000/api/empleado", {
-        documento: documento,
-        nombre: name,
-        cargo: cargo,
-        contrasenia: contrasenia
-      });
-      await limpiarCampos();
-      Swal.fire({
-        title: "Registro Exitoso!",
-        html: "<i>El empleado <strong>" + name + "</strong>  fue registrado con exito </i>",
-        icon: "success",
-        timer: 3000
-
-      });
-    } catch (error) {
-      console.error("Error al agregar empleado:", error);
+    if (cargoUsuarioActual === 'admin') {
+        try {
+            await axios.post("http://localhost:3000/api/empleado", {
+                documento: documento,
+                nombre: name,
+                cargo: cargo,
+                contrasenia: contrasenia
+            });
+            await limpiarCampos();
+            Swal.fire({
+                title: "Registro Exitoso!",
+                html: "<i>El empleado <strong>" + name + "</strong> fue registrado con éxito</i>",
+                icon: "success",
+                timer: 3000
+            });
+        } catch (error) {
+            console.error("Error al agregar empleado:", error);
+        }
+    } else {
+        Swal.fire({
+            title: "Permiso denegado",
+            text: "No tienes permisos para registrar un nuevo empleado.",
+            icon: "error",
+            timer: 3000
+        });
     }
-  };
+};
 
-  //metodo para buscar un empleado
   const buscarEmpleado = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/empleado/${documento}`);
@@ -49,7 +57,6 @@ function Empleados({ nombre }) {
       console.error("Error al buscar empleado:", error);
       
       if (error.response && error.response.status === 404) {
-        // Mostrar SweetAlert para indicar que el empleado no fue encontrado
         Swal.fire({
           title: "Empleado no encontrado",
           text: "No se encontró ningún empleado con el documento proporcionado.",
@@ -60,7 +67,6 @@ function Empleados({ nombre }) {
     }
   };
 
-  //metodo para actualizar empleado
   const update = async (event) => {
     event.preventDefault();
 
@@ -72,16 +78,15 @@ function Empleados({ nombre }) {
     });
     await limpiarCampos();
     setEmpleado("");
-      Swal.fire({
-        title: "Actualizacion Exitosa!",
-        html: "<i>El empleado <strong>" + name + "</strong>  fue Actualizado con exito </i>",
-        icon: "success",
-        timer: 3000
+    Swal.fire({
+      title: "Actualizacion Exitosa!",
+      html: "<i>El empleado <strong>" + name + "</strong>  fue Actualizado con exito </i>",
+      icon: "success",
+      timer: 3000
 
-      });
+    });
   }
 
-  //metodo para eliminar empleados
   const borrar = (empleado) => {
     Swal.fire({
       title: "confirmar?",
@@ -110,8 +115,6 @@ function Empleados({ nombre }) {
 
   }
   
-
-  //metodos secundarios
 
   const mostrarAgregar = () => {
     setAgregar(!agregar);
@@ -193,18 +196,21 @@ function Empleados({ nombre }) {
 
               <div className="input-group mb-3">
                 <span className="input-group-text" id="basic-addon1">Cargo</span>
-                <input
+                <select
                   onChange={(event) => {
                     setCargo(event.target.value);
                   }}
-                  type="text"
-                  className="form-control"
+                  className="form-select"
                   value={cargo}
-                  placeholder="Ingrese el cargo"
                   aria-label="cargo"
                   aria-describedby="basic-addon1"
                   required
-                />
+                >
+                  <option value="" disabled>Seleccione un cargo</option>
+                  <option value="admin">admin</option>
+                  <option value="Cajero">Cajero</option>
+                  <option value="Vendedor">Vendedor</option>
+                </select>
               </div>
 
               <div className="input-group mb-3">
@@ -246,49 +252,50 @@ function Empleados({ nombre }) {
               </div>
 
               {editar ? (
-                 <>
+                <>
                 <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">Nombre</span>
-                <input
-                  onChange={(event) => {
-                    setName(event.target.value);
-                  }}
-                  type="text"
-                  className="form-control"
-                  value={name}
-                  placeholder="Ingrese Nombre"
-                  aria-label="name"
-                  aria-describedby="basic-addon1"
-                  required
-                />
-              </div>
+                  <span className="input-group-text" id="basic-addon1">Nombre</span>
+                  <input
+                    onChange={(event) => {
+                      setName(event.target.value);
+                    }}
+                    type="text"
+                    className="form-control"
+                    value={name}
+                    placeholder="Ingrese Nombre"
+                    aria-label="name"
+                    aria-describedby="basic-addon1"
+                    required
+                  />
+                </div>
 
-              <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">Cargo</span>
-                <input
-                  onChange={(event) => {
-                    setCargo(event.target.value);
-                  }}
-                  type="text"
-                  className="form-control"
-                  value={cargo}
-                  placeholder="Ingrese el cargo"
-                  aria-label="cargo"
-                  aria-describedby="basic-addon1"
-                  required
-                />
-              </div>
-              <button type="button" className="btn btn-primary" onClick={update}>
-                Guardar Cambios
-              </button>
-
-              </>
-
+                <div className="input-group mb-3">
+                  <span className="input-group-text" id="basic-addon1">Cargo</span>
+                  <select
+                    onChange={(event) => {
+                      setCargo(event.target.value);
+                    }}
+                    className="form-select"
+                    value={cargo}
+                    aria-label="cargo"
+                    aria-describedby="basic-addon1"
+                    required
+                  >
+                    <option value="" disabled>Seleccione un cargo</option>
+                    <option value="admin">admin</option>
+                    <option value="Cajero">Cajero</option>
+                    <option value="Vendedor">Vendedor</option>
+                  </select>
+                </div>
+                <button type="button" className="btn btn-primary" onClick={update}>
+                  Guardar Cambios
+                </button>
+                </>
               ) : (
                 <>
                 <button type="button" className="btn btn-primary" onClick={buscarEmpleado}>
-                Buscar
-              </button>
+                  Buscar
+                </button>              
 
                 {empleado && (
                   <table className="table">
