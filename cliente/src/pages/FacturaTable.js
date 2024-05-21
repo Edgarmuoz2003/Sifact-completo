@@ -1,6 +1,6 @@
 import React from 'react';
 
-const FacturaTable = ({ factura }) => {
+const FacturaTable = ({ factura, cliente }) => {
   return (
     <div className="factura-table">
       <h3>Detalles de la Factura</h3>
@@ -9,6 +9,9 @@ const FacturaTable = ({ factura }) => {
           <tr>
             <th>Número de Factura</th>
             <th>Cliente</th>
+            <th>Cliente Nombre</th>
+            <th>Cliente Dirección</th>
+            <th>Cliente Teléfono</th>
             <th>Fecha</th>
             <th>Total de la Factura</th>
           </tr>
@@ -16,7 +19,11 @@ const FacturaTable = ({ factura }) => {
         <tbody>
           <tr>
             <td>{factura.numeroFactura}</td>
-            <td>{factura.cliente}</td>
+            {/* Agregar una nueva celda para mostrar el nombre del cliente */}
+            <td>{cliente ? cliente.nit : 'Cliente no encontrado'}</td>
+            <td>{cliente ? cliente.nombre : 'Cliente no encontrado'}</td>
+            <td>{cliente ? cliente.direccion : 'Cliente no encontrado'}</td>
+            <td>{cliente ? cliente.telefono : 'Cliente no encontrado'}</td>
             <td>{factura.fecha}</td>
             <td>{factura.totalFactura}</td>
           </tr>

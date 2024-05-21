@@ -21,6 +21,8 @@ function Facturacion({ nombre }) {
 
   const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - "); // Estado para controlar el valor del input de búsqueda
   const [facturaEncontrada, setFacturaEncontrada] = useState(null);
+  const [clienteFactura, setClienteFactura] = useState(null); // Estado para los datos del cliente asociado a la factura
+
 
   const buscarFactura = async () => {
     try {
@@ -31,10 +33,20 @@ function Facturacion({ nombre }) {
       setFacturaEncontrada(data);
       setShowModal(false); // Cerrar el modal después de la búsqueda
       setShowModal2(true);
-      
+  
+      // Obtener los datos del cliente asociado a la factura
+      if (data && data.factura && data.factura.cliente) {
+        const clienteResponse = await axios.get(
+          `http://localhost:3000/api/clientes/${data.factura.cliente}`
+        );
+        const clienteData = clienteResponse.data;
+        setClienteFactura(clienteData);
+      }
     } catch (error) {
       console.error("Error al buscar la factura:", error);
       setFacturaEncontrada(null);
+      setClienteFactura(null);
+      setShowModal(false); // Asegurarse de que el modal esté cerrado si no se encuentra la factura
       Swal.fire({
         title: "Factura no encontrada",
         text: `La factura con número ${searchNumFactura} no fue encontrada.`,
@@ -663,7 +675,10 @@ function Facturacion({ nombre }) {
               <div className="modal-body">
                 {/* Integra el componente FacturaTable y pasa la factura encontrada como prop */}
                 {facturaEncontrada && (
-                  <FacturaTable factura={facturaEncontrada.factura} />
+                  <FacturaTable factura={facturaEncontrada.factura} 
+                  cliente={clienteFactura}
+                  />
+                  
                 )}
               </div>
               <div className="modal-footer">

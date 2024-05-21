@@ -94,6 +94,27 @@ clienteCtrl.deleteCliente = async(req, res) => {
 }
 
 
+// Metodo para buscar un cliente por _id
+clienteCtrl.getIdCliente = async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      // Buscar el cliente por _id
+      const cliente = await Cliente.findById(id).select('nit nombre direccion telefono _id');
+  
+      if (!cliente) {
+        return res.status(404).json({ message: 'Cliente no encontrado' });
+      }
+      
+      res.json(cliente);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al obtener el cliente', details: error.message });
+    }
+  };
+
+
+
 
 
 module.exports = clienteCtrl;
