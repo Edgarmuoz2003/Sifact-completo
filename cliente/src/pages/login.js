@@ -32,32 +32,32 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
   // Método para autenticarse
   const auth = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/api/login", {
-        documento: documento,
-        contrasenia: contrasenia
-      });
+        const response = await axios.post("http://localhost:3000/api/login", {
+            documento: documento,
+            contrasenia: contrasenia
+        });
 
-      if (response.data.token && response.data.nombre) {
-        setAuthenticated(true);
-        setToken(response.data.token);
-        setNombre(response.data.nombre);
+        if (response.data.token && response.data.nombre && response.data.cargo) {
+            setAuthenticated(true);
+            setToken(response.data.token);
+            setNombre(response.data.nombre);
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('nombre', response.data.nombre);
+            localStorage.setItem('cargo', response.data.cargo); // Guardando cargo
 
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('nombre', response.data.nombre);
-
-
-        history.push('/home');
-      } else {
-        setError('Credenciales incorrectas');
-      }
+            history.push('/home');
+        } else {
+            setError('Credenciales incorrectas');
+        }
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        setError('Credenciales incorrectas');
-      } else {
-        setError('Error al autenticar. Por favor, inténtalo de nuevo.');
-      }
+        if (error.response && error.response.status === 401) {
+            setError('Credenciales incorrectas');
+        } else {
+            setError('Error al autenticar. Por favor, inténtalo de nuevo.');
+        }
     }
-  };
+};
+
 
   return (
     <div className="container contenedor-login">

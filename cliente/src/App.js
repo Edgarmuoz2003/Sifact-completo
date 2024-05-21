@@ -13,34 +13,37 @@ function App() {
   const [authenticated, setAuthenticated] = useState(false);
   const [token, setToken] = useState('');
   const [nombre, setNombre] = useState('');
+  const [cargo, setCargo] = useState('');
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedNombre = localStorage.getItem('nombre');
+    const storedCargo = localStorage.getItem('cargo')
 
-    if (storedToken && storedNombre) {
+    if (storedToken && storedNombre && storedCargo) {
       setToken(storedToken);
       setNombre(storedNombre);
+      setCargo(storedCargo); // Establecer cargo
       setAuthenticated(true);
-    }
-  }, []);
+  }
+}, []);
 
   return (
     <Router>
       <Switch>
-        <Route path="/login">
-          <Login setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
-        </Route>
-        <Route path="/home">
+      <Route path="/login">
+          <Login setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
+      </Route>
+      <Route path="/home">
           {authenticated ? (
-            <>
-              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
-              <Home />
-            </>
+              <>
+                  <Navbar nombre={nombre} cargo={cargo} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
+                  <Home />
+              </>
           ) : (
-            <Redirect to="/login" />
+                        <Redirect to="/login" />
           )}
-        </Route>
+      </Route>
         <Route path="/clientes">
           {authenticated ? (
             <>

@@ -1,4 +1,7 @@
-.g-empleados{
+.g-empleados {
     margin-top: 5rem;
-    max-width: 50rem;
+    max-width: 70rem; /* Aumenta el valor para hacer el contenedor más ancho */
+    width: 100%; /* Asegura que el contenedor use el 100% del ancho disponible */
+    padding: 1rem; /* Opcional: agrega padding para mejorar la apariencia */
+    box-sizing: border-box; /* Incluye el padding y el borde en el ancho total */
 }
