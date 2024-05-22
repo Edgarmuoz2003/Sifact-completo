@@ -95,30 +95,6 @@ productoCtrl.deleteProducto = async(req, res) => {
     }
 }
 
-productoCtrl.modificarStock  = async (req, res) => {
-    try {
-        const codigoProducto = req.params.codigo; // Suponiendo que el código del producto está en los parámetros de la solicitud
-        const nuevoStock = req.body.nuevoStock; // Suponiendo que el nuevo stock está en el cuerpo de la solicitud
-
-        // Buscar el producto por su código
-        const producto = await Producto.findOne({ codigo: codigoProducto });
-
-        if (!producto) {
-            return res.status(404).json({ message: 'Producto no encontrado' });
-        }
-
-        // Actualizar el stock
-        producto.stock = nuevoStock;
-
-        // Guardar los cambios en la base de datos
-        await producto.save();
-
-        return res.status(200).json({ message: 'Stock actualizado exitosamente' });
-    } catch (error) {
-        console.error('Error al modificar el stock:', error);
-        return res.status(500).json({ message: 'Error interno del servidor' });
-    }
-};
 
 
 

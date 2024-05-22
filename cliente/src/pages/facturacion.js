@@ -260,12 +260,104 @@ function Facturacion({ nombre }) {
     return total;
   };
 
+  const actualizarStock = async () => {
+    try {
+      // Iterar sobre los productos facturados
+      for (const producto of productosFacturados) {
+        // Obtener el producto de la base de datos
+        const response = await axios.get(`http://localhost:3000/api/productos/${producto.codigo}`);
+        const productoDB = response.data;
+  
+        if (!productoDB) {
+          throw new Error(`El producto con código ${producto.codigo} no fue encontrado`);
+        }
+  
+        // Almacenar el producto encontrado en una variable
+        const productoEncontrado = productoDB;
+  
+        // Verificar si hay suficiente stock para realizar la venta
+        if (productoEncontrado.stock < producto.cantidad) {
+          console.error(`No se puede vender ${producto.descripcion} porque no hay suficiente en stock`);
+          Swal.fire({
+            title: "Stock insuficiente",
+            text: `No se puede vender ${producto.descripcion} porque no hay suficiente en stock`,
+            icon: "success",
+            timer: 3000,
+          });
+          // Aquí podrías mostrar un mensaje al usuario si lo deseas
+          continue; // Continuar con el siguiente producto en el bucle
+        }
+  
+        // Calcular el nuevo stock restando la cantidad facturada del stock actual
+        const nuevoStock = productoEncontrado.stock - parseInt(producto.cantidad);
+  
+        // Hacer la solicitud PUT al backend para actualizar el stock del producto
+        await axios.patch(`http://localhost:3000/api/productos/${productoEncontrado._id}`, {
+          stock: nuevoStock
+        });
+  
+        
+      }
+    } catch (error) {
+      console.error("Error al actualizar el stock:", error);
+    }
+  };
+  
+
+  let productosSinStock = []; // Declaración global de la variable para almacenar los códigos de los productos sin suficiente stock
+
+const verificarStockSuficiente = async () => {
+    try {
+        productosSinStock = []; // Limpiar el arreglo antes de verificar el stock
+
+        // Iterar sobre los productos facturados
+        for (const producto of productosFacturados) {
+            const response = await axios.get(`http://localhost:3000/api/productos/${producto.codigo}`);
+            const productoDB = response.data;
+
+            if (!productoDB || producto.cantidad > productoDB.stock) {
+                productosSinStock.push(producto.codigo); // Agregar el código del producto sin stock al arreglo
+            }
+        }
+
+        if (productosSinStock.length > 0) {
+            // Mostrar mensaje de advertencia con los códigos de los productos sin stock suficiente
+            Swal.fire({
+                title: "Productos sin stock suficiente",
+                html: `Los siguientes productos no tienen suficiente stock para realizar la venta:<br><br>${productosSinStock.join(', ')}`,
+                icon: "warning",
+                timer: 5000,
+            });
+            return false; // Devolver falso si hay productos sin suficiente stock
+        }
+        
+        return true; // Devolver verdadero si hay suficiente stock para todos los productos
+    } catch (error) {
+        console.error("Error al verificar el stock:", error);
+        return false; // Devolver falso en caso de error
+    }
+};
 
 
   //SECCION DE METODOS DE LOS BOTONES DE GUARDAR Y OTROS
 
   const guardarFactura = async () => {
     try {
+
+      /// Verificar si hay suficiente stock para todos los productos facturados
+        const haySuficienteStock = await verificarStockSuficiente();
+
+        if (!haySuficienteStock) {
+            const productosSinStockStr = productosSinStock.join(', ');
+            Swal.fire({
+                title: "Productos sin stock suficiente",
+                html: `Los siguientes productos no tienen suficiente stock para realizar la venta:<br><br>${productosSinStockStr}`,
+                icon: "warning",
+                timer: 5000,
+            });
+            return; // Detener la ejecución si no hay suficiente stock
+        }
+
       // Construir el objeto de factura con los datos necesarios
       const productosFactura = productosFacturados.map((producto) => ({
         codigoProducto: producto.codigo,
@@ -286,7 +378,7 @@ function Facturacion({ nombre }) {
 
       // Enviar la solicitud POST al backend para guardar la factura
       await axios.post("http://localhost:3000/api/facturacion", facturaData);
-     
+      await actualizarStock();
       await generarPDF();
       await resetValores();
       Swal.fire({

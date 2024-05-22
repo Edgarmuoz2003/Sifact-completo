@@ -7,7 +7,7 @@ router.get('/productos/:codigo', productosCtrl.getProducto);
 router.get('/productos', productosCtrl.getProductos);
 router.patch('/productos/:id', productosCtrl.updateProductos);
 router.delete('/productos/:id', productosCtrl.deleteProducto);
-router.patch('/productos/:codigo/stock', productosCtrl.modificarStock);
+
 
 
 
