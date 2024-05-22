@@ -1,6 +1,6 @@
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import axios from 'axios';
 import '../css/estilos-empleados.css';
 import Swal from 'sweetalert2'
@@ -14,6 +14,7 @@ function Empleados({ nombre }) {
   const [contrasenia, setContrasenia] = useState("");
   const [empleado, setEmpleado] = useState(null)
   const [editar, setEditar] = useState(false);
+  const buscarRef = useRef(null);
 
   const cargoUsuarioActual = localStorage.getItem('cargo');
 
@@ -48,23 +49,28 @@ function Empleados({ nombre }) {
     }
 };
 
-  const buscarEmpleado = async () => {
-    try {
-      const response = await axios.get(`http://localhost:3000/api/empleado/${documento}`);
-      setEmpleado(response.data);
-      limpiarCampos()
-    } catch (error) {
-      console.error("Error al buscar empleado:", error);
-      
-      if (error.response && error.response.status === 404) {
-        Swal.fire({
-          title: "Empleado no encontrado",
-          text: "No se encontró ningún empleado con el documento proporcionado.",
-          icon: "error",
-          timer: 3000
-        });
+  const handleBuscarEmpleado = async (event) => {
+    if (event.key === "Enter") {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/empleado/${documento}`);
+        setEmpleado(response.data);
+        limpiarCampos()
+        buscarRef.current.focus();
+      } catch (error) {
+        console.error("Error al buscar empleado:", error);
+        
+        if (error.response && error.response.status === 404) {
+          Swal.fire({
+            title: "Empleado no encontrado",
+            text: "No se encontró ningún empleado con el documento proporcionado.",
+            icon: "error",
+            timer: 3000
+          });
+        }
       }
+
     }
+    
   };
 
   const update = async (event) => {
@@ -88,30 +94,38 @@ function Empleados({ nombre }) {
   }
 
   const borrar = (empleado) => {
-    Swal.fire({
-      title: "confirmar?",
-      text: "confirmas que quieres eliminar a " + empleado.nombre + " ?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Si, eliminar!"
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios.delete(`http://localhost:3000/api/empleado/${empleado._id}`).then(() => {
-          limpiarCampos();
-          setEmpleado("")
-          Swal.fire({
-            title: "Eliminado!",
-            text: empleado.name + ' fue eliminado',
-            icon: "success",
+    if (cargoUsuarioActual === 'admin') {
+      Swal.fire({
+        title: "confirmar?",
+        text: "confirmas que quieres eliminar a " + empleado.nombre + " ?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Si, eliminar!"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          axios.delete(`http://localhost:3000/api/empleado/${empleado._id}`).then(() => {
+            limpiarCampos();
+            setEmpleado("")
+            Swal.fire({
+              title: "Eliminado!",
+              text: empleado.name + ' fue eliminado',
+              icon: "success",
+               timer: 3000
+             });
+          })
+            }
+      });
+    } else {
+        Swal.fire({
+            title: "Permiso denegado",
+            text: "No tienes permisos para registrar un nuevo empleado.",
+            icon: "error",
             timer: 3000
-          });
+        });
+    }
 
-        })
-
-      }
-    });
 
   }
   
@@ -129,12 +143,23 @@ function Empleados({ nombre }) {
   }
 
   const editarEmpleado = (empleado) => {
-    setEditar(true);
+    if (cargoUsuarioActual === 'admin') {
+      setEditar(true);
 
-    setDocumento(empleado.documento);
-    setCargo(empleado.cargo);
-    setName(empleado.nombre)
-    setId(empleado._id);
+      setDocumento(empleado.documento);
+      setCargo(empleado.cargo);
+      setName(empleado.nombre)
+      setId(empleado._id);
+    } else {
+      setEditar(false)
+        Swal.fire({
+            title: "Permiso denegado",
+            text: "No tienes permisos para Editar un empleado.",
+            icon: "error",
+            timer: 3000
+        });
+    }
+    
 
   }
 
@@ -241,6 +266,11 @@ function Empleados({ nombre }) {
                   onChange={(event) => {
                     setDocumento(event.target.value);
                   }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      handleBuscarEmpleado(event);
+                    }
+                  }}
                   type="number"
                   className="form-control"
                   value={documento}
@@ -293,7 +323,7 @@ function Empleados({ nombre }) {
                 </>
               ) : (
                 <>
-                <button type="button" className="btn btn-primary" onClick={buscarEmpleado}>
+                <button type="button" className="btn btn-primary" onClick={handleBuscarEmpleado}>
                   Buscar
                 </button>              
 

@@ -260,7 +260,7 @@ function Facturacion({ nombre }) {
     return total;
   };
 
-  
+
 
   //SECCION DE METODOS DE LOS BOTONES DE GUARDAR Y OTROS
 
