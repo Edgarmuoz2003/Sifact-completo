@@ -23,7 +23,6 @@ function Facturacion({ nombre }) {
   const [facturaEncontrada, setFacturaEncontrada] = useState(null);
   const [clienteFactura, setClienteFactura] = useState(null); // Estado para los datos del cliente asociado a la factura
 
-
   const buscarFactura = async () => {
     try {
       const response = await axios.get(
@@ -33,7 +32,7 @@ function Facturacion({ nombre }) {
       setFacturaEncontrada(data);
       setShowModal(false); // Cerrar el modal después de la búsqueda
       setShowModal2(true);
-  
+
       // Obtener los datos del cliente asociado a la factura
       if (data && data.factura && data.factura.cliente) {
         const clienteResponse = await axios.get(
@@ -261,6 +260,8 @@ function Facturacion({ nombre }) {
     return total;
   };
 
+  
+
   //SECCION DE METODOS DE LOS BOTONES DE GUARDAR Y OTROS
 
   const guardarFactura = async () => {
@@ -278,13 +279,14 @@ function Facturacion({ nombre }) {
 
       const facturaData = {
         numeroFactura: numActual,
-        cliente: cliente._id,
+        cliente: cliente?._id,
         productos: productosFactura,
         totalFactura: totalFactura,
       };
 
       // Enviar la solicitud POST al backend para guardar la factura
       await axios.post("http://localhost:3000/api/facturacion", facturaData);
+     
       await generarPDF();
       await resetValores();
       Swal.fire({
@@ -651,18 +653,17 @@ function Facturacion({ nombre }) {
         >
           Cancelar
         </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowModal(true)}
-          >
-            Buscar Factura
-          </button>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+          Buscar Factura
+        </button>
       </div>
 
       {/* Modal para mostrar la factura encontrada */}
       {showModal2 && (
         <div className="modal show" tabIndex="-1" style={{ display: "block" }}>
-          <div className="modal-dialog modal-lg"> {/* Tamaño grande del modal */}
+          <div className="modal-dialog modal-lg">
+            {" "}
+            {/* Tamaño grande del modal */}
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Factura Encontrada</h5>
@@ -675,10 +676,10 @@ function Facturacion({ nombre }) {
               <div className="modal-body">
                 {/* Integra el componente FacturaTable y pasa la factura encontrada como prop */}
                 {facturaEncontrada && (
-                  <FacturaTable factura={facturaEncontrada.factura} 
-                  cliente={clienteFactura}
+                  <FacturaTable
+                    factura={facturaEncontrada.factura}
+                    cliente={clienteFactura}
                   />
-                  
                 )}
               </div>
               <div className="modal-footer">

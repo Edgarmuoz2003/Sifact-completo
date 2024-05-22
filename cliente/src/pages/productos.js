@@ -158,6 +158,7 @@ function Productos() {
       });
       setProductos({ ...productos, stock: nuevoStock });
       setEditarStock(false);
+      
       Swal.fire({
         title: "Actualización de Stock Exitosa!",
         text: `El stock de ${productos.descripcion} ha sido actualizado.`,
