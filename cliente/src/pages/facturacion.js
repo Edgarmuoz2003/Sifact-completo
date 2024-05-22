@@ -19,7 +19,7 @@ function Facturacion({ nombre }) {
   const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
   const [showModal2, setShowModal2] = useState(false); // Estado para controlar la visibilidad del modal
 
-  const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - "); // Estado para controlar el valor del input de búsqueda
+  const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - 0000 "); // Estado para controlar el valor del input de búsqueda
   const [facturaEncontrada, setFacturaEncontrada] = useState(null);
   const [clienteFactura, setClienteFactura] = useState(null); // Estado para los datos del cliente asociado a la factura
 
@@ -640,23 +640,11 @@ function Facturacion({ nombre }) {
           </tbody>
         </table>
       </section>
+
       <div className="seccion-botones">
-        <button className="btn btn-primary" onClick={guardarFactura}>
-          Guardar Factura
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={resetValores}
-        >
-          Cancelar
-        </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowModal(true)}
-          >
-            Buscar Factura
-          </button>
+        <button className="btn btn-primary" onClick={guardarFactura}> <i className="bi bi-save"/> Guardar</button>
+        <button type="button" className="btn btn-secondary" onClick={resetValores}><i className="bi bi-x-circle"></i> Cancelar</button>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}><i className="bi bi-search"></i> Buscar</button>
       </div>
 
       {/* Modal para mostrar la factura encontrada */}
@@ -745,3 +733,5 @@ function Facturacion({ nombre }) {
 }
 
 export default Facturacion;
+
+

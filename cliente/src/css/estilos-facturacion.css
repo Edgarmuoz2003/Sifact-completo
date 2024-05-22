@@ -89,10 +89,6 @@ font-weight: bold;
 }
 
 
-
-
-
-
 table {
   width: 100%;
   border-collapse: collapse; /* Combina los bordes de las celdas */
@@ -159,4 +155,9 @@ td, th {
   border: 3px solid #ccc;
   margin-top: 20px;
   border-radius: 10px;
+}
+
+.seccion-botones button{
+  margin-right: 10px;
+  width: 120px;
 }
