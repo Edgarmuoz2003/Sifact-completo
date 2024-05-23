@@ -19,10 +19,9 @@ function Facturacion({ nombre }) {
   const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
   const [showModal2, setShowModal2] = useState(false); // Estado para controlar la visibilidad del modal
 
-  const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - 0000 "); // Estado para controlar el valor del input de búsqueda
+  const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - "); // Estado para controlar el valor del input de búsqueda
   const [facturaEncontrada, setFacturaEncontrada] = useState(null);
   const [clienteFactura, setClienteFactura] = useState(null); // Estado para los datos del cliente asociado a la factura
-
 
   const buscarFactura = async () => {
     try {
@@ -33,7 +32,7 @@ function Facturacion({ nombre }) {
       setFacturaEncontrada(data);
       setShowModal(false); // Cerrar el modal después de la búsqueda
       setShowModal2(true);
-  
+
       // Obtener los datos del cliente asociado a la factura
       if (data && data.factura && data.factura.cliente) {
         const clienteResponse = await axios.get(
@@ -261,10 +260,104 @@ function Facturacion({ nombre }) {
     return total;
   };
 
+  const actualizarStock = async () => {
+    try {
+      // Iterar sobre los productos facturados
+      for (const producto of productosFacturados) {
+        // Obtener el producto de la base de datos
+        const response = await axios.get(`http://localhost:3000/api/productos/${producto.codigo}`);
+        const productoDB = response.data;
+  
+        if (!productoDB) {
+          throw new Error(`El producto con código ${producto.codigo} no fue encontrado`);
+        }
+  
+        // Almacenar el producto encontrado en una variable
+        const productoEncontrado = productoDB;
+  
+        // Verificar si hay suficiente stock para realizar la venta
+        if (productoEncontrado.stock < producto.cantidad) {
+          console.error(`No se puede vender ${producto.descripcion} porque no hay suficiente en stock`);
+          Swal.fire({
+            title: "Stock insuficiente",
+            text: `No se puede vender ${producto.descripcion} porque no hay suficiente en stock`,
+            icon: "success",
+            timer: 3000,
+          });
+          // Aquí podrías mostrar un mensaje al usuario si lo deseas
+          continue; // Continuar con el siguiente producto en el bucle
+        }
+  
+        // Calcular el nuevo stock restando la cantidad facturada del stock actual
+        const nuevoStock = productoEncontrado.stock - parseInt(producto.cantidad);
+  
+        // Hacer la solicitud PUT al backend para actualizar el stock del producto
+        await axios.patch(`http://localhost:3000/api/productos/${productoEncontrado._id}`, {
+          stock: nuevoStock
+        });
+  
+        
+      }
+    } catch (error) {
+      console.error("Error al actualizar el stock:", error);
+    }
+  };
+  
+
+  let productosSinStock = []; // Declaración global de la variable para almacenar los códigos de los productos sin suficiente stock
+
+const verificarStockSuficiente = async () => {
+    try {
+        productosSinStock = []; // Limpiar el arreglo antes de verificar el stock
+
+        // Iterar sobre los productos facturados
+        for (const producto of productosFacturados) {
+            const response = await axios.get(`http://localhost:3000/api/productos/${producto.codigo}`);
+            const productoDB = response.data;
+
+            if (!productoDB || producto.cantidad > productoDB.stock) {
+                productosSinStock.push(producto.codigo); // Agregar el código del producto sin stock al arreglo
+            }
+        }
+
+        if (productosSinStock.length > 0) {
+            // Mostrar mensaje de advertencia con los códigos de los productos sin stock suficiente
+            Swal.fire({
+                title: "Productos sin stock suficiente",
+                html: `Los siguientes productos no tienen suficiente stock para realizar la venta:<br><br>${productosSinStock.join(', ')}`,
+                icon: "warning",
+                timer: 5000,
+            });
+            return false; // Devolver falso si hay productos sin suficiente stock
+        }
+        
+        return true; // Devolver verdadero si hay suficiente stock para todos los productos
+    } catch (error) {
+        console.error("Error al verificar el stock:", error);
+        return false; // Devolver falso en caso de error
+    }
+};
+
+
   //SECCION DE METODOS DE LOS BOTONES DE GUARDAR Y OTROS
 
   const guardarFactura = async () => {
     try {
+
+      /// Verificar si hay suficiente stock para todos los productos facturados
+        const haySuficienteStock = await verificarStockSuficiente();
+
+        if (!haySuficienteStock) {
+            const productosSinStockStr = productosSinStock.join(', ');
+            Swal.fire({
+                title: "Productos sin stock suficiente",
+                html: `Los siguientes productos no tienen suficiente stock para realizar la venta:<br><br>${productosSinStockStr}`,
+                icon: "warning",
+                timer: 5000,
+            });
+            return; // Detener la ejecución si no hay suficiente stock
+        }
+
       // Construir el objeto de factura con los datos necesarios
       const productosFactura = productosFacturados.map((producto) => ({
         codigoProducto: producto.codigo,
@@ -278,13 +371,14 @@ function Facturacion({ nombre }) {
 
       const facturaData = {
         numeroFactura: numActual,
-        cliente: cliente._id,
+        cliente: cliente?._id,
         productos: productosFactura,
         totalFactura: totalFactura,
       };
 
       // Enviar la solicitud POST al backend para guardar la factura
       await axios.post("http://localhost:3000/api/facturacion", facturaData);
+      await actualizarStock();
       await generarPDF();
       await resetValores();
       Swal.fire({
@@ -641,17 +735,28 @@ function Facturacion({ nombre }) {
           </tbody>
         </table>
       </section>
-
       <div className="seccion-botones">
-        <button className="btn btn-primary" onClick={guardarFactura}> <i className="bi bi-save"/> Guardar</button>
-        <button type="button" className="btn btn-secondary" onClick={resetValores}><i className="bi bi-x-circle"></i> Cancelar</button>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}><i className="bi bi-search"></i> Buscar</button>
+        <button className="btn btn-primary" onClick={guardarFactura}>
+          Guardar Factura
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={resetValores}
+        >
+          Cancelar
+        </button>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+          Buscar Factura
+        </button>
       </div>
 
       {/* Modal para mostrar la factura encontrada */}
       {showModal2 && (
         <div className="modal show" tabIndex="-1" style={{ display: "block" }}>
-          <div className="modal-dialog modal-lg"> {/* Tamaño grande del modal */}
+          <div className="modal-dialog modal-lg">
+            {" "}
+            {/* Tamaño grande del modal */}
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Factura Encontrada</h5>
@@ -664,10 +769,10 @@ function Facturacion({ nombre }) {
               <div className="modal-body">
                 {/* Integra el componente FacturaTable y pasa la factura encontrada como prop */}
                 {facturaEncontrada && (
-                  <FacturaTable factura={facturaEncontrada.factura} 
-                  cliente={clienteFactura}
+                  <FacturaTable
+                    factura={facturaEncontrada.factura}
+                    cliente={clienteFactura}
                   />
-                  
                 )}
               </div>
               <div className="modal-footer">
@@ -734,5 +839,3 @@ function Facturacion({ nombre }) {
 }
 
 export default Facturacion;
-
-

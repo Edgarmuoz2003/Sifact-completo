@@ -9,4 +9,6 @@ router.patch('/productos/:id', productosCtrl.updateProductos);
 router.delete('/productos/:id', productosCtrl.deleteProducto);
 
 
+
+
 module.exports = router;
