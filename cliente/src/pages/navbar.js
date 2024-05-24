@@ -14,12 +14,12 @@ function Navbar({ nombre, setAuthenticated, setToken, setNombre }) {
     // Limpia el localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('nombre');
-
+   
     // Restablece los estados
     setAuthenticated(false);
     setToken("");
     setNombre("");
-
+   
     // Habilita la redirección
     setRedirect(true);
   }
