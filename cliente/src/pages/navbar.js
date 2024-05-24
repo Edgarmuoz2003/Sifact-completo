@@ -3,10 +3,10 @@ import { Link, useHistory, Redirect } from 'react-router-dom/cjs/react-router-do
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
+const cargoUsuarioActual = localStorage.getItem('cargo');
 
-
-function Navbar({ nombre, cargo, setAuthenticated, setToken, setNombre, setCargo }) {
-  //const history = useHistory();
+function Navbar({ nombre, setAuthenticated, setToken, setNombre, setCargo }) {
+  const history = useHistory();
   const [redirect, setRedirect] = useState(false);
 
   const Logout = () => {
@@ -57,7 +57,7 @@ function Navbar({ nombre, cargo, setAuthenticated, setToken, setNombre, setCargo
               </li>
             </ul>
             <div className="navbar-brand ms-auto">
-              <p className="nombre"> {nombre} - {cargo}</p>
+              <p className="nombre"> {nombre} - {cargoUsuarioActual}</p>
             </div>
             <div className="navbar-brand ms-auto">
               <button className="btn btn-success" onClick={Logout}>Cerrar Sesión</button>

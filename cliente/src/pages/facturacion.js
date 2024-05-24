@@ -415,6 +415,7 @@ const verificarStockSuficiente = async () => {
     try {
       // Crear el documento PDF
       const doc = new jsPDF();
+      
 
       doc.setFontSize(12); // Aumentar el tamaño del texto
 
