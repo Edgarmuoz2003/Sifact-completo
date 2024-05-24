@@ -18,36 +18,36 @@ function App() {
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedNombre = localStorage.getItem('nombre');
-    const storedCargo = localStorage.getItem('cargo')
+    const storedCargo = localStorage.getItem('cargo');
 
     if (storedToken && storedNombre && storedCargo) {
       setToken(storedToken);
       setNombre(storedNombre);
-      setCargo(storedCargo); // Establecer cargo
+      setCargo(storedCargo);
       setAuthenticated(true);
-  }
-}, []);
+    }
+  }, []);
 
   return (
     <Router>
       <Switch>
-      <Route path="/login">
+        <Route path="/login">
           <Login setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
-      </Route>
-      <Route path="/home">
+        </Route>
+        <Route path="/home">
           {authenticated ? (
-              <>
-                  <Navbar nombre={nombre} cargo={cargo} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
-                  <Home />
-              </>
+            <>
+              <Navbar nombre={nombre} cargo={cargo} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
+              <Home />
+            </>
           ) : (
-                        <Redirect to="/login" />
+            <Redirect to="/login" />
           )}
-      </Route>
+        </Route>
         <Route path="/clientes">
           {authenticated ? (
             <>
-              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Navbar nombre={nombre} cargo={cargo} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
               <Clientes nombre={nombre} />
             </>
           ) : (
@@ -57,7 +57,7 @@ function App() {
         <Route path="/productos">
           {authenticated ? (
             <>
-              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Navbar nombre={nombre} cargo={cargo} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
               <Productos nombre={nombre} />
             </>
           ) : (
@@ -67,7 +67,7 @@ function App() {
         <Route path="/facturacion">
           {authenticated ? (
             <>
-              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Navbar nombre={nombre} cargo={cargo} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
               <Facturacion nombre={nombre} />
             </>
           ) : (
@@ -77,7 +77,7 @@ function App() {
         <Route path="/configuraciones">
           {authenticated ? (
             <>
-              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Navbar nombre={nombre} cargo={cargo} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
               <Configuraciones nombre={nombre} />
             </>
           ) : (
@@ -87,7 +87,7 @@ function App() {
         <Route path="/empleados">
           {authenticated ? (
             <>
-              <Navbar nombre={nombre} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} />
+              <Navbar nombre={nombre} cargo={cargo} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
               <Empleados nombre={nombre} />
             </>
           ) : (

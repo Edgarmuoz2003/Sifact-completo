@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 import '../css/estilos-login.css';
 
-const Login = ({ setAuthenticated, setToken, setNombre }) => {
+const Login = ({ setAuthenticated, setToken, setNombre, setCargo }) => {
   const history = useHistory();
   const [documento, setDocumento] = useState('');
   const [contrasenia, setContrasenia] = useState('');
@@ -38,24 +38,25 @@ const Login = ({ setAuthenticated, setToken, setNombre }) => {
         });
 
         if (response.data.token && response.data.nombre && response.data.cargo) {
-            setAuthenticated(true);
-            setToken(response.data.token);
-            setNombre(response.data.nombre);
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('nombre', response.data.nombre);
-            localStorage.setItem('cargo', response.data.cargo); // Guardando cargo
-
-            history.push('/home');
+          setAuthenticated(true);
+          setToken(response.data.token);
+          setNombre(response.data.nombre);
+          setCargo(response.data.cargo);
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('nombre', response.data.nombre);
+          localStorage.setItem('cargo', response.data.cargo); 
+  
+          history.push('/home');
         } else {
-            setError('Credenciales incorrectas');
+          setError('Credenciales incorrectas');
         }
-    } catch (error) {
+      } catch (error) {
         if (error.response && error.response.status === 401) {
-            setError('Credenciales incorrectas');
+          setError('Credenciales incorrectas');
         } else {
-            setError('Error al autenticar. Por favor, inténtalo de nuevo.');
+          setError('Error al autenticar. Por favor, inténtalo de nuevo.');
         }
-    }
+      }
 };
 
 
