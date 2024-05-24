@@ -19,7 +19,7 @@ function Facturacion({ nombre }) {
   const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
   const [showModal2, setShowModal2] = useState(false); // Estado para controlar la visibilidad del modal
 
-  const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - "); // Estado para controlar el valor del input de búsqueda
+  const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - 0000"); // Estado para controlar el valor del input de búsqueda
   const [facturaEncontrada, setFacturaEncontrada] = useState(null);
   const [clienteFactura, setClienteFactura] = useState(null); // Estado para los datos del cliente asociado a la factura
 
@@ -120,15 +120,11 @@ function Facturacion({ nombre }) {
   };
 
   const showEmpresa = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:3000/api/config/empresa"
-      );
-      const empresaData = response.data;
-      setEmpresa(empresaData);
-    } catch (error) {
-      console.error("Error al obtener los datos:", error);
-    }
+    const response = await axios.get(
+      "http://localhost:3000/api/config/empresa"
+    );
+    const empresaData = response.data;
+    setEmpresa(empresaData);
   };
 
   useEffect(() => {
