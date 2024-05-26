@@ -1,3 +1,4 @@
+const caja = require('../models/caja');
 const Factura = require('../models/factura');
 
 const facturaCtrl = {};
@@ -71,6 +72,24 @@ facturaCtrl.getFacturaByNumero = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al buscar la factura por número', error: error.message });
   }
 };
+
+//APERTURA Y CIERRE DE CAJA
+facturaCtrl.abrirCaja = async (req, res) => {
+  try {
+    const  { fecha, base, empleado, abierto } = req.body 
+
+    const datosCaja = new caja({
+      fecha,
+      base,
+      empleado,
+      abierto
+    })
+
+   datosCaja.save
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al abrir caja' })
+  }
+}
 
 
 

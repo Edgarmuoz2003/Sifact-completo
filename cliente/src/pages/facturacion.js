@@ -15,9 +15,13 @@ function Facturacion({ nombre }) {
   const [productosFacturados, setProductosFacturados] = useState([]);
   const [totalFactura, setTotalFactura] = useState(0);
   const [resolucion, setResolucion] = useState(null);
+  const cargoUsuarioActual = localStorage.getItem('cargo');
 
-  const [showModal, setShowModal] = useState(false); // Estado para controlar la visibilidad del modal
-  const [showModal2, setShowModal2] = useState(false); // Estado para controlar la visibilidad del modal
+//ESTADOS DE LOS MODALES
+  const [showModal, setShowModal] = useState(false); 
+  const [showModal2, setShowModal2] = useState(false);
+  const [cierreCaja, setCierreCaja] = useState(false);
+  const [inicioCaja, setInicioCaja] = useState(false); 
 
   const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - 0000"); // Estado para controlar el valor del input de búsqueda
   const [facturaEncontrada, setFacturaEncontrada] = useState(null);
@@ -527,6 +531,37 @@ const verificarStockSuficiente = async () => {
     }
   };
 
+  //apertura y cierre de caja
+
+  const handleAbrirCaja = () => {
+    if( cargoUsuarioActual === 'admin'  ){
+      setInicioCaja(true)
+    }  else {
+      Swal.fire({
+        title: "Permiso denegado",
+        text: "Para abrir caja debes ser Administrador.",
+        icon: "error",
+        timer: 3000
+      });
+    }
+      
+  }
+
+  const handleCerrarCaja = () => {
+    if( cargoUsuarioActual === 'admin'  ){
+      setCierreCaja(true)
+    }  else {
+      Swal.fire({
+        title: "Permiso denegado",
+        text: "Para cerrar caja debes ser Administrador.",
+        icon: "error",
+        timer: 3000
+      });
+    }
+  }
+
+  
+
   return (
     <div className="container principal">
       <section className="seccion-datosfac row">
@@ -732,19 +767,11 @@ const verificarStockSuficiente = async () => {
         </table>
       </section>
       <div className="seccion-botones">
-        <button className="btn btn-primary" onClick={guardarFactura}>
-          Guardar Factura
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={resetValores}
-        >
-          Cancelar
-        </button>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          Buscar Factura
-        </button>
+        <button className="btn btn-primary" onClick={guardarFactura}>Guardar Factura</button>
+        <button type="button" className="btn btn-secondary" onClick={resetValores}> Cancelar </button>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}> Buscar Factura</button>
+        <button className="btn btn-primary" onClick={handleAbrirCaja}> Abrir Caja</button>
+        <button className="btn btn-primary" onClick={handleCerrarCaja}> Cerrar Caja</button>
       </div>
 
       {/* Modal para mostrar la factura encontrada */}
@@ -756,11 +783,7 @@ const verificarStockSuficiente = async () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Factura Encontrada</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowModal2(false)}
-                ></button>
+                <button type="button" className="btn-close" onClick={() => setShowModal2(false)}></button>
               </div>
               <div className="modal-body">
                 {/* Integra el componente FacturaTable y pasa la factura encontrada como prop */}
@@ -792,11 +815,7 @@ const verificarStockSuficiente = async () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Buscar Factura</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setShowModal(false)}
-                ></button>
+                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
               <div className="modal-body">
                 <label htmlFor="buscarNumeroFactura" className="form-label">
@@ -828,6 +847,50 @@ const verificarStockSuficiente = async () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {inicioCaja &&(
+        <div  className="modal show" tabIndex="-1" style={{ display: "block" }} >
+          <div className="modal-dialog modal-lg" >
+            <div className="modal-content" >
+              <div className="modal-header" >
+                <h1 className="modal-title">Abrir Caja</h1>
+                <button type="button" className="btn-close" onClick={() => setInicioCaja(false)}></button>
+                {" "}
+                <label htmlFor="fechaAbrir">Fecha:</label>
+                <input
+                  type="Date"
+                  className="form-control"
+                  id="fechaAbrir"
+                  value={fecha}
+                  readOnly
+                />
+              </div>
+              <div className="modal-body" >
+                <h5>Ingrese la Base Asignada</h5>
+                <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" required />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {cierreCaja &&(
+        <div  className="modal show" tabIndex="-1" style={{ display: "block" }} >
+          <div className="modal-dialog modal-lg" >
+            <div className="modal-content" >
+              <div className="modal-header" >
+                <h1 className="modal-title">Cierre de Caja Diario</h1>
+                <button type="button" className="btn-close" onClick={() => setCierreCaja(false)}></button>
+              </div>
+              <div className="modal-body" >
+                <h5>Ingrese El valor del dinero contado en caja incluyendo la base</h5>
+                <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" />
+              </div>
+            </div>
+          </div>
+
         </div>
       )}
     </div>
