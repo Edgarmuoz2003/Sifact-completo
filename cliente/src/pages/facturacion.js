@@ -14,7 +14,6 @@ function Facturacion({ nombre }) {
   const [empresa, setEmpresa] = useState("");
   const [productosFacturados, setProductosFacturados] = useState([]);
   const [totalFactura, setTotalFactura] = useState(0);
-  const [resolucion, setResolucion] = useState(null);
   const cargoUsuarioActual = localStorage.getItem('cargo');
 
 //ESTADOS DE LOS MODALES
@@ -26,6 +25,9 @@ function Facturacion({ nombre }) {
   const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - 0000"); // Estado para controlar el valor del input de búsqueda
   const [facturaEncontrada, setFacturaEncontrada] = useState(null);
   const [clienteFactura, setClienteFactura] = useState(null); // Estado para los datos del cliente asociado a la factura
+  const [baseAsignada, setBaseAsignada ] = useState("");
+  const [idCaja, setIdCaja] = useState("");
+  
 
   const buscarFactura = async () => {
     try {
@@ -69,10 +71,10 @@ function Facturacion({ nombre }) {
       const response = await axios.get(
         "http://localhost:3000/api/config/resolucion"
       );
-      const data = response.data[0];
-      setResolucion(data);
-      setAutoriza(data.autoriza);
-      setNumInicio(data.numInicio);
+      const numero = response.data[0];
+      
+      setAutoriza(numero.autoriza);
+      setNumInicio(numero.numInicio);
 
       const verificarNum = await axios.get(
         "http://localhost:3000/api/config/numActual"
@@ -144,10 +146,15 @@ function Facturacion({ nombre }) {
 
   const manejarCambios = (event) => {
     setNit(event.target.value);
-  };
+  }; 
 
   const manejarBusqueda = async (event) => {
+    
     if (event.key === "Enter") {
+      if(!nit){
+        alert("Ingresa el NIT o 99 para ventas de Contado")
+        return;
+      }
       try {
         const response = await axios.get(
           `http://localhost:3000/api/cliente/${nit}`
@@ -187,14 +194,42 @@ function Facturacion({ nombre }) {
 
   const mBusquedaCod = async (event) => {
     if (event.key === "Enter") {
+      if(!codigo){
+        alert("Ingresa el Codigo del Producto")
+        return;
+      }
       try {
         const response = await axios.get(
           `http://localhost:3000/api/productos/${codigo}`
         );
         const producData = response.data;
-        setProducto(producData);
-        cantidadRef.current.focus();
+        if (producData) {
+          setProducto(producData);
+          cantidadRef.current.focus();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Código incorrecto',
+            text: 'El código ingresado no es válido. Verifique e intente de nuevo.',
+            timer: 3000,
+          });
+        }
       } catch (error) {
+        if (error.response && error.response.status === 404) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Producto no encontrado',
+            text: 'No se encontró ningún producto con el código ingresado.',
+            timer: 3000,
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Ocurrió un error al buscar el producto. Intente nuevamente.',
+            timer: 3000,
+          });
+        }
         console.error("Error al buscar producto", error);
       }
     }
@@ -208,6 +243,10 @@ function Facturacion({ nombre }) {
 
   const mOpercacionesCan = async (event) => {
     if (event.key === "Enter") {
+      if(!cantidad){
+        alert("Ingresa Una cantidad valida")
+        return;
+      }
       if (cantidad) {
         const totalproducto = (await producto.precio) * cantidad;
         const impuesto = ((await producto.impuesto) * totalproducto) / 100;
@@ -338,6 +377,40 @@ const verificarStockSuficiente = async () => {
     }
 };
 
+const verificarCajaAbierta = async () =>{
+  const response = await axios.get('http://localhost:3000/api/caja')
+  const datosCaja = response.data.datosCaja;
+
+  if(!datosCaja.abierto){
+    Swal.fire({
+      title: "Caja Cerrada",
+      html: "Aun no se a abierto caja, abra un nuevo ciclo de facturacion e intente de nuevo",
+      icon: "warning",
+      timer: 5000,
+  });
+    return false
+  }
+  setIdCaja(datosCaja._id)
+  return true
+}
+
+const actualizarTotal = async () => {
+  try {
+    const response = await axios.get('http://localhost:3000/api/caja')
+    const datosCaja = response.data.datosCaja;
+
+    const saldoActual = datosCaja.efectivo
+    const nuevoSaldo = saldoActual + totalFactura
+
+    await axios.patch("http://localhost:3000/api/caja/" + idCaja, {
+      efectivo: nuevoSaldo
+    })
+  } catch (error) {
+    console.log(error)
+  }
+  
+}
+
 
   //SECCION DE METODOS DE LOS BOTONES DE GUARDAR Y OTROS
 
@@ -356,6 +429,18 @@ const verificarStockSuficiente = async () => {
                 timer: 5000,
             });
             return; // Detener la ejecución si no hay suficiente stock
+        }
+
+        const cajaAbierta = await verificarCajaAbierta();
+
+        if(!cajaAbierta){
+          Swal.fire({
+            title: "Caja Cerrada",
+            html: "Aun no se a abierto caja, abra un nuevo ciclo de facturacion e intente de nuevo",
+            icon: "warning",
+            timer: 5000,
+        });
+        return;
         }
 
       // Construir el objeto de factura con los datos necesarios
@@ -378,6 +463,7 @@ const verificarStockSuficiente = async () => {
 
       // Enviar la solicitud POST al backend para guardar la factura
       await axios.post("http://localhost:3000/api/facturacion", facturaData);
+      await actualizarTotal();
       await actualizarStock();
       await generarPDF();
       await resetValores();
@@ -560,6 +646,36 @@ const verificarStockSuficiente = async () => {
     }
   }
 
+  const abrirCaja = async ()=> {
+    if (!baseAsignada) {
+      alert('Por favor, ingrese la base asignada.');
+      return;
+    }
+    try {
+      const response = await axios.get('http://localhost:3000/api/caja')
+      const datosCaja = response.data.datosCaja;
+      const id = datosCaja._id
+
+      if(!datosCaja.abierto){
+        await axios.patch(`http://localhost:3000/api/caja/${id}`, {
+        fecha: fecha,
+        base: baseAsignada,
+        abierto: true
+      })
+      } else {
+        Swal.fire({
+          title: "CAJA NO CERRADA AUN",
+          text: "Para abrir caja primero cierre el ciclo anterior.",
+          icon: "error",
+          timer: 3000
+        });
+      }
+      
+    } catch (error) {
+      console.error("Error al abrir caja: ", error);
+    }
+  }
+
   
 
   return (
@@ -600,6 +716,7 @@ const verificarStockSuficiente = async () => {
                 type="text"
                 className="form-control"
                 id="numeroFactura"
+                name="numeroFactura"
                 value={numActual}
                 readOnly
               />
@@ -610,6 +727,7 @@ const verificarStockSuficiente = async () => {
                 type="Date"
                 className="form-control"
                 id="fechaFactura"
+                name="fechaFactura"
                 value={fecha}
                 readOnly
               />
@@ -627,6 +745,7 @@ const verificarStockSuficiente = async () => {
                 type="text"
                 className="form-control"
                 id="nit"
+                name="nit"
                 value={nit}
                 onChange={manejarCambios}
                 onKeyPress={manejarBusqueda}
@@ -673,6 +792,8 @@ const verificarStockSuficiente = async () => {
             placeholder="Código del Producto"
             aria-label="Código"
             aria-describedby="basic-addon1"
+            id="codigo"
+            name="codigo"
             value={codigo}
             onChange={mCambiosCod}
             onKeyDown={(event) => {
@@ -690,6 +811,8 @@ const verificarStockSuficiente = async () => {
             type="text"
             className="input-des"
             placeholder="Descripcion"
+            id="descripcion"
+            name="descripcion"
             value={producto ? producto.descripcion : ""}
             aria-label="Descripcion"
             aria-describedby="basic-addon1"
@@ -703,6 +826,8 @@ const verificarStockSuficiente = async () => {
             type="number"
             className="input-can"
             placeholder="Cantidad"
+            id="cantidad"
+            name="cantidad"
             value={cantidad}
             onChange={mCambiosCan}
             onKeyDown={(event) => {
@@ -722,6 +847,8 @@ const verificarStockSuficiente = async () => {
             type="text"
             className="input-pre"
             placeholder="Precio"
+            id="precio"
+            name="precio"
             value={producto ? producto.precio : ""}
             aria-label="Precio"
             aria-describedby="basic-addon1"
@@ -825,6 +952,7 @@ const verificarStockSuficiente = async () => {
                   type="text"
                   className="form-control"
                   id="buscarNumeroFactura"
+                  name="numeroFactura"
                   value={searchNumFactura}
                   onChange={(e) => setSearchNumFactura(e.target.value)}
                 />
@@ -862,14 +990,17 @@ const verificarStockSuficiente = async () => {
                   type="Date"
                   className="form-control"
                   id="fechaAbrir"
+                  name="fecha"
                   value={fecha}
                   readOnly
                 />
               </div>
               <div className="modal-body" >
                 <h5>Ingrese la Base Asignada</h5>
-                <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" required />
+                <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" id="baseAsignada" name="baseAsignada"  value={baseAsignada}
+                onChange={(e) => setBaseAsignada(e.target.value)} required />
               </div>
+              <button type="button" className="btn btn-primary" onClick={abrirCaja}>Abrir Caja</button>
             </div>
           </div>
 
@@ -886,7 +1017,7 @@ const verificarStockSuficiente = async () => {
               </div>
               <div className="modal-body" >
                 <h5>Ingrese El valor del dinero contado en caja incluyendo la base</h5>
-                <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" />
+                <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" id="contado" name="valorContado" />
               </div>
             </div>
           </div>

@@ -76,23 +76,50 @@ facturaCtrl.getFacturaByNumero = async (req, res) => {
 //APERTURA Y CIERRE DE CAJA
 facturaCtrl.abrirCaja = async (req, res) => {
   try {
-    const  { fecha, base, empleado, abierto } = req.body 
+    const  { fecha, base, abierto } = req.body 
 
     const datosCaja = new caja({
       fecha,
       base,
-      empleado,
       abierto
     })
 
-   datosCaja.save
+   await datosCaja.save()
+   res.status(200).json({ message: 'se han guardado los datos de apertura correctamente' } )
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al abrir caja' })
+    res.status(500).json({ message: 'Error al abrir caja' })
   }
 }
 
+facturaCtrl.getAbrirCaja = async (req, res) =>{
+  try {
+    const response = await caja.find()
+    const datosCaja =response[0]
+    res.status(200).json({ datosCaja });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener los datos de caja' })
+  }
+  }
 
+  facturaCtrl.updateCaja = async (req, res)=>{
+    const { id } = req.params
 
+    const cajaEditada = {
+      fecha: req.body.fecha,
+      base: req.body.base,
+      abierto: req.body.abierto,
+      efectivo: req.body.efectivo,
+      diferencia: req.body.diferencia
+    }
+
+    try {
+      await caja.findByIdAndUpdate(id, { $set: cajaEditada }, { new: true })
+      res.send('La caja a sido actualizada a Abierta')
+    } catch (error) {
+      console.error(error); 
+      res.status(500).json({ error: 'Error al intentar caja', details: error.message });
+    }
+  }
 
 
 module.exports = facturaCtrl;
