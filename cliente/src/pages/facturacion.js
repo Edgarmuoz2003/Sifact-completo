@@ -360,7 +360,7 @@ const verificarStockSuficiente = async () => {
             const productoDB = response.data;
 
             if (!productoDB || producto.cantidad > productoDB.stock) {
-                productosSinStock.push(producto.codigo); // Agregar el código del producto sin stock al arreglo
+                productosSinStock.push(producto.descripcion); // Agregar el código del producto sin stock al arreglo
             }
         }
 
