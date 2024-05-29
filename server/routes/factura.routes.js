@@ -8,6 +8,8 @@ router.get('/facturacion/:numeroFactura', facturaCtrl.getFacturaByNumero);
 router.post('/caja', facturaCtrl.abrirCaja);
 router.patch('/caja/:id', facturaCtrl.updateCaja);
 router.get('/caja', facturaCtrl.getAbrirCaja);
+router.post('/registro', facturaCtrl.saveRegistro);
+
 
 //router.patch('/factura/:numeroFactura', facturaCtrl.updateFactura);
 // router.delete('/factura/:id', facturaCtrl.deleteFactura);

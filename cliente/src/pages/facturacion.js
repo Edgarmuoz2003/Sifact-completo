@@ -21,12 +21,17 @@ function Facturacion({ nombre }) {
   const [showModal2, setShowModal2] = useState(false);
   const [cierreCaja, setCierreCaja] = useState(false);
   const [inicioCaja, setInicioCaja] = useState(false); 
+  const [resumen, setResumen] = useState(false)
 
   const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - 0000"); // Estado para controlar el valor del input de búsqueda
   const [facturaEncontrada, setFacturaEncontrada] = useState(null);
   const [clienteFactura, setClienteFactura] = useState(null); // Estado para los datos del cliente asociado a la factura
   const [baseAsignada, setBaseAsignada ] = useState("");
   const [idCaja, setIdCaja] = useState("");
+  const [contado, setContado] = useState("")
+  const [efectivo, setEfectivo] = useState("")
+  const [totalCierre, setTotalCierre] = useState("")
+  const [diferencia, setDiferencia] = useState("")
   
 
   const buscarFactura = async () => {
@@ -440,6 +445,7 @@ const actualizarTotal = async () => {
             icon: "warning",
             timer: 5000,
         });
+        resetValores();
         return;
         }
 
@@ -633,7 +639,20 @@ const actualizarTotal = async () => {
       
   }
 
-  const handleCerrarCaja = () => {
+  const handleCerrarCaja = async () => {
+    const cajaAbierta = await verificarCajaAbierta();
+    console.log("La respuesta fue: " +cajaAbierta)
+
+    if(!cajaAbierta){
+      Swal.fire({
+        title: "Caja Cerrada",
+        html: "Ya se ah cerrado caja",
+        icon: "warning",
+        timer: 5000,
+    });
+    return;
+    }
+
     if( cargoUsuarioActual === 'admin'  ){
       setCierreCaja(true)
     }  else {
@@ -675,6 +694,68 @@ const actualizarTotal = async () => {
       console.error("Error al abrir caja: ", error);
     }
   }
+
+  const cerrarCaja = async () => {
+    
+    try {
+      const response = await axios.get('http://localhost:3000/api/caja')
+      const datosCaja = response.data.datosCaja;
+      const id = datosCaja._id;
+      const efectivo = datosCaja.efectivo;
+      const base = datosCaja.base;
+
+      if(datosCaja){
+        setResumen(true)
+        setIdCaja(await id)
+        setEfectivo(await efectivo)
+        setBaseAsignada(await base)
+
+        const totalEntregar = efectivo + base;
+        setTotalCierre(totalEntregar)
+
+        const diferencia = contado - await totalEntregar;
+        setDiferencia(diferencia)
+      } else {
+        alert('No se obtuvieron datos')
+      }
+      
+    } catch (error) {
+      console.error("Error de Conexion al Servidor", error);
+      alert("Error de Conexion al Servidor", error)
+    }
+
+  }
+
+  const guardarCierre = async () => {
+    try {
+      await axios.post('http://localhost:3000/api/registro', {
+        fecha: fecha,
+        total_ventas: efectivo,
+        contado: contado,
+        diferencia: diferencia
+      })
+      await axios.patch("http://localhost:3000/api/caja/" + idCaja, {
+      abierto: false,
+      base: 0,
+      efectivo: 0,
+      diferencia: 0
+    })
+
+    setCierreCaja(false);
+    
+      Swal.fire({
+        title: "Cierre Exitoso",
+        text: "El cierre de caja se ha realizado con exito",
+        icon: "success",
+        timer: 3000
+      });
+    } catch (error) {
+      console.error("Error de Conexion al Servidor", error);
+      alert("Error de Conexion al Servidor", error)
+    }
+  }
+
+  
 
   
 
@@ -1007,23 +1088,49 @@ const actualizarTotal = async () => {
         </div>
       )}
 
-      {cierreCaja &&(
-        <div  className="modal show" tabIndex="-1" style={{ display: "block" }} >
-          <div className="modal-dialog modal-lg" >
-            <div className="modal-content" >
-              <div className="modal-header" >
-                <h1 className="modal-title">Cierre de Caja Diario</h1>
-                <button type="button" className="btn-close" onClick={() => setCierreCaja(false)}></button>
-              </div>
-              <div className="modal-body" >
-                <h5>Ingrese El valor del dinero contado en caja incluyendo la base</h5>
-                <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" id="contado" name="valorContado" />
-              </div>
-            </div>
-          </div>
+     {cierreCaja && (
+        <div className="modal show" tabIndex="-1" style={{ display: "block" }}>
+            <div className="modal-dialog modal-lg">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <h1 className="modal-title">Cierre de Caja Diario</h1>
+                        <button type="button" className="btn-close" onClick={() => setCierreCaja(false)}></button>
+                    </div>
+                    <div className="modal-body">
+                        <h5>Ingrese El valor del dinero contado en caja incluyendo la base</h5>
+                        <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" id="contado" name="valorContado" value={contado} onChange={(e) => setContado(e.target.value)} />
+                        <button type="button" className="btn btn-primary" onClick={cerrarCaja}>Generar</button>
+                        {resumen && (
+                            <div>
+                                <label htmlFor="efectivo">Total Efectivo: </label>
+                                <input type="number" className="form-control" id="efectivo" name="efectivo" value={efectivo} readOnly />
 
+                                <label htmlFor="baseCaja">Base asignada: </label>
+                                <input type="number" className="form-control" id="baseCaja" name="baseCaja" value={baseAsignada} readOnly />
+
+                                <label htmlFor="totalCaja">Total a entregar: </label>
+                                <input type="number" className="form-control" id="totalCaja" name="totalCaja" value={totalCierre} readOnly />
+
+                                <label htmlFor="totalContado">Total contado: </label>
+                                <input type="number" className="form-control" id="totalContado" name="totalContado" value={contado} readOnly />
+
+                                <label htmlFor="diferencia">Diferencia: </label>
+                                <input 
+                                    type="number" 
+                                    className={`form-control ${diferencia < 0 ? 'red-background' : diferencia > 0 ? 'yellow-background' : ''}`} 
+                                    id="diferencia" 
+                                    name="diferencia" 
+                                    value={diferencia} 
+                                    readOnly 
+                                />
+                                <button type="button" className="btn btn-primary" onClick={guardarCierre}>Guardar</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
-      )}
+    )}
     </div>
   );
 }

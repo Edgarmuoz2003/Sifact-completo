@@ -184,3 +184,14 @@ td, th {
   width: auto; /* Ajusta el tamaño al contenido */
 }
 
+.red-background {
+  background-color: red;
+  color: white;
+}
+
+.yellow-background {
+  background-color: yellow;
+  color: black;
+}
+
+

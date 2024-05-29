@@ -1,5 +1,6 @@
 const caja = require('../models/caja');
 const Factura = require('../models/factura');
+const registroCaja = require('../models/registroCierre');
 
 const facturaCtrl = {};
 
@@ -121,6 +122,26 @@ facturaCtrl.getAbrirCaja = async (req, res) =>{
     }
   }
 
+  facturaCtrl.saveRegistro = async (req, res) => {
+    try {
+      const { fecha, total_ventas, contado, diferencia } = req.body
+
+    const nuevoRegistro = new registroCaja({
+      fecha,
+      total_ventas,
+      contado,
+      diferencia
+    })
+    await nuevoRegistro.save()
+    res.status(200).json({ message: 'Se a guardado un Nuevo registro' } )
+    } catch (error) {
+      console.error(error); 
+      res.status(500).json({ error: 'Error al guardar el registro', details: error.message });
+    }
+    
+
+
+  }
 
 module.exports = facturaCtrl;
 
