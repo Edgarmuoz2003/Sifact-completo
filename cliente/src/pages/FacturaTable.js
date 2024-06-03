@@ -56,7 +56,9 @@ const FacturaTable = ({ factura, cliente }) => {
           ))}
         </tbody>
       </table>
+      
     </div>
+    
   );
 };
 
