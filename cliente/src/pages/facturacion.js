@@ -638,7 +638,7 @@ const actualizarTotal = async () => {
     }
       
   }
-  
+
 
   const handleCerrarCaja = async () => {
     const cajaAbierta = await verificarCajaAbierta();
@@ -653,6 +653,7 @@ const actualizarTotal = async () => {
     });
     return;
     }
+
 
     if( cargoUsuarioActual === 'admin'  ){
       setCierreCaja(true)
@@ -700,7 +701,7 @@ const actualizarTotal = async () => {
           text: "Para abrir caja primero cierre el ciclo anterior.",
           icon: "error",
           timer: 3000
-        });
+        }); 
       }
       
     } catch (error) {
