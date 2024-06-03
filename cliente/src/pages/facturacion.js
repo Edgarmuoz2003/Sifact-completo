@@ -675,8 +675,13 @@ const actualizarTotal = async () => {
 
   const abrirCaja = async ()=> {
     if (!baseAsignada) {
-      alert('Por favor, ingrese la base asignada.');
-      
+      Swal.fire({
+        title: "ALERTA",
+        text: "Por favor, ingrese la base asignada.",
+        icon: "error",
+        timer: 3000
+      });
+     
       return;
     }
     try {
