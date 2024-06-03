@@ -110,7 +110,7 @@ function Empleados({ nombre }) {
             setEmpleado("")
             Swal.fire({
               title: "Eliminado!",
-              text: empleado.name + ' fue eliminado',
+              text: empleado.nombre + ' fue eliminado',
               icon: "success",
                timer: 3000
              });
