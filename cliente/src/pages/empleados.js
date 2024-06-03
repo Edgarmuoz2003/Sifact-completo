@@ -322,10 +322,7 @@ function Empleados({ nombre }) {
                 </button>
                 </>
               ) : (
-                <>
-                <button type="button" className="btn btn-primary" onClick={handleBuscarEmpleado}>
-                  Buscar
-                </button>              
+                <>             
 
                 {empleado && (
                   <table className="table">
