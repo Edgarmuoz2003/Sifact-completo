@@ -638,6 +638,7 @@ const actualizarTotal = async () => {
     }
       
   }
+  
 
   const handleCerrarCaja = async () => {
     const cajaAbierta = await verificarCajaAbierta();
