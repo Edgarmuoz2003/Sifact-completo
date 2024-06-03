@@ -157,7 +157,14 @@ function Facturacion({ nombre }) {
     
     if (event.key === "Enter") {
       if(!nit){
-        alert("Ingresa el NIT o 99 para ventas de Contado")
+        Swal.fire({
+          title: "PARA COMPRA RAPIDA!",
+          html:
+            
+            "</strong>  para compra rapida ingreso el codigo 99 </i>",
+          icon: "error",
+          timer: 3000,
+        })
         return;
       }
       try {
@@ -176,7 +183,7 @@ function Facturacion({ nombre }) {
           html:
             "<i>el cliente  <strong> " +
             nit +
-            "</strong> no esta  registrado  </i>",
+            "</strong> no esta  registrado o para compra rapida ingreso el codigo 99 </i>",
           icon: "error",
           timer: 3000,
         });
@@ -669,8 +676,13 @@ const actualizarTotal = async () => {
 
   const abrirCaja = async ()=> {
     if (!baseAsignada) {
-      alert('Por favor, ingrese la base asignada.');
-      
+      Swal.fire({
+        title: "ALERTA",
+        text: "Por favor, ingrese la base asignada.",
+        icon: "error",
+        timer: 3000
+      });
+     
       return;
     }
     try {
