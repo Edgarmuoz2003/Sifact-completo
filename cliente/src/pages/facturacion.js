@@ -746,6 +746,7 @@ const actualizarTotal = async () => {
       
     } catch (error) {
       console.error("Error de Conexion al Servidor", error);
+
       alert("Error de Conexion al Servidor", error)
     }
 
@@ -775,8 +776,14 @@ const actualizarTotal = async () => {
         timer: 3000
       });
     } catch (error) {
-      console.error("Error de Conexion al Servidor", error);
-      alert("Error de Conexion al Servidor", error)
+      console.error("alerta", error);
+      Swal.fire({
+        title: "Cierre Exitoso",
+        text: "Ingrese El valor del dinero contado en caja incluyendo la base",
+        icon: "error",
+        timer: 3000
+      });
+      
     }
   }
 
