@@ -668,19 +668,31 @@ const actualizarTotal = async () => {
   const abrirCaja = async ()=> {
     if (!baseAsignada) {
       alert('Por favor, ingrese la base asignada.');
+      
       return;
     }
     try {
       const response = await axios.get('http://localhost:3000/api/caja')
       const datosCaja = response.data.datosCaja;
       const id = datosCaja._id
+      setInicioCaja(false);
 
-      if(!datosCaja.abierto){
+      if (!datosCaja.abierto) {
         await axios.patch(`http://localhost:3000/api/caja/${id}`, {
-        fecha: fecha,
-        base: baseAsignada,
-        abierto: true
-      })
+            fecha: fecha,
+            base: baseAsignada,
+            abierto: true
+        });
+
+        Swal.fire({
+            title: "CAJA ABIERTA",
+            text: "La caja se ha abierto correctamente.",
+            icon: "success",
+            timer: 3000
+        });
+
+        
+
       } else {
         Swal.fire({
           title: "CAJA NO CERRADA AUN",
