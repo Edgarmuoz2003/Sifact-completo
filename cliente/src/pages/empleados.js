@@ -110,7 +110,7 @@ function Empleados({ nombre }) {
             setEmpleado("")
             Swal.fire({
               title: "Eliminado!",
-              text: empleado.name + ' fue eliminado',
+              text: empleado.nombre + ' fue eliminado',
               icon: "success",
                timer: 3000
              });
@@ -322,10 +322,7 @@ function Empleados({ nombre }) {
                 </button>
                 </>
               ) : (
-                <>
-                <button type="button" className="btn btn-primary" onClick={handleBuscarEmpleado}>
-                  Buscar
-                </button>              
+                <>             
 
                 {empleado && (
                   <table className="table">
