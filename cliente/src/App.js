@@ -49,6 +49,8 @@ function App() {
             <>
               <Navbar nombre={nombre} cargo={cargo} setAuthenticated={setAuthenticated} setToken={setToken} setNombre={setNombre} setCargo={setCargo} />
               <Clientes nombre={nombre} />
+
+
             </>
           ) : (
             <Redirect to="/login" />
