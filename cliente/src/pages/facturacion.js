@@ -9,30 +9,29 @@ import FacturaTable from "./FacturaTable";
 function Facturacion({ nombre }) {
   const [fecha, setFecha] = useState("");
   const [autoriza, setAutoriza] = useState("");
-  const [numInicio, setNumInicio] = useState();
   const [numActual, setNumActual] = useState("");
+  const [errorNumInicio, setErrorNumInicio] = useState("");
   const [empresa, setEmpresa] = useState("");
   const [productosFacturados, setProductosFacturados] = useState([]);
   const [totalFactura, setTotalFactura] = useState(0);
-  const cargoUsuarioActual = localStorage.getItem('cargo');
+  const cargoUsuarioActual = localStorage.getItem("cargo");
 
-//ESTADOS DE LOS MODALES
-  const [showModal, setShowModal] = useState(false); 
+  //ESTADOS DE LOS MODALES
+  const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [cierreCaja, setCierreCaja] = useState(false);
-  const [inicioCaja, setInicioCaja] = useState(false); 
-  const [resumen, setResumen] = useState(false)
+  const [inicioCaja, setInicioCaja] = useState(false);
+  const [resumen, setResumen] = useState(false);
 
   const [searchNumFactura, setSearchNumFactura] = useState("FOK3 - 0000"); // Estado para controlar el valor del input de búsqueda
   const [facturaEncontrada, setFacturaEncontrada] = useState(null);
   const [clienteFactura, setClienteFactura] = useState(null); // Estado para los datos del cliente asociado a la factura
-  const [baseAsignada, setBaseAsignada ] = useState("");
+  const [baseAsignada, setBaseAsignada] = useState("");
   const [idCaja, setIdCaja] = useState("");
-  const [contado, setContado] = useState("")
-  const [efectivo, setEfectivo] = useState("")
-  const [totalCierre, setTotalCierre] = useState("")
-  const [diferencia, setDiferencia] = useState("")
-  
+  const [contado, setContado] = useState("");
+  const [efectivo, setEfectivo] = useState("");
+  const [totalCierre, setTotalCierre] = useState("");
+  const [diferencia, setDiferencia] = useState("");
 
   const buscarFactura = async () => {
     try {
@@ -71,64 +70,66 @@ function Facturacion({ nombre }) {
     setFecha(fechaActual);
   };
 
-  const obtenerNumero = async () => {
+
+
+  
+  const actualizarNumero = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:3000/api/config/resolucion"
-      );
-      const numero = response.data[0];
-      
-      setAutoriza(numero.autoriza);
-      setNumInicio(numero.numInicio);
+      const response = await axios.get("http://localhost:3000/api/config/numActual");
+      const numGuardado = response.data[0];
 
-      const verificarNum = await axios.get(
-        "http://localhost:3000/api/config/numActual"
-      );
-      const numVerificado = verificarNum.data[0];
+      const nuevoNumero = numGuardado.numActual + 1;
+      const id = numGuardado._id;
 
-      if (!numVerificado) {
-        await axios.post("http://localhost:3000/api/config/numActual", {
-          numActual: numInicio,
-        });
-        setNumActual(`${autoriza} - 0000${numInicio}`);
-      } else {
-        const id = numVerificado._id;
-        const nuevoNumero = numVerificado.numActual + 1;
+      const response2 = await axios.put(`http://localhost:3000/api/config/numActual/${id}`, {
+        numActual: nuevoNumero,
+      });
 
-        await axios.put(`http://localhost:3000/api/config/numActual/${id}`, {
-          numActual: nuevoNumero,
-        });
-        setNumActual(`${autoriza} - 0000${nuevoNumero}`);
-      }
+      setNumActual(`${autoriza} - ${nuevoNumero}`);
+
+      console.log("Respuesta al enviar la solicitud put: " +response2);
     } catch (error) {
-      console.error("Error al obtener los datos:", error);
+      console.log("error en la solicitud get de actualizarNumero: " + error)
     }
+    
   };
 
   const mostrarNumeroActual = async () => {
     try {
+      //consultamos el numero en la configuración
       const response = await axios.get(
         "http://localhost:3000/api/config/resolucion"
       );
-      const data = response.data[0];
-      setAutoriza(data.autoriza);
-      setNumInicio(data.numInicio);
 
-      const verificarNum = await axios.get(
+      if (response.data.length === 0) {
+        setErrorNumInicio("Aun no configuras los datos de la Resolucion");
+      }
+
+      const data = response.data[0];
+      const auto = data.autoriza;
+      const inicio = data.numInicio;
+
+      setAutoriza(auto);
+
+      //consultamos el numero actual registrado en la base de datos
+      const response2 = await axios.get(
         "http://localhost:3000/api/config/numActual"
       );
-      const numVerificado = verificarNum.data[0];
 
-      if (!numVerificado) {
-        setNumActual(`${autoriza} - 0000${numInicio}`);
+      //si no hay numero registrado se envia el valor configurado
+      if (response2.data.length === 0) {
+        await axios.post("http://localhost:3000/api/config/numActual", {
+          numActual: inicio,
+        });
       } else {
-        const nuevoNumero = numVerificado.numActual;
-        setNumActual(`${data.autoriza} - 0000${nuevoNumero}`);
+        const numVerificado = response2.data[0];
+        const numActualDb = numVerificado.numActual;
+
+        setNumActual(`${auto} - ${numActualDb}`);
       }
-    } catch (error) {
-      console.error("Error al obtener los datos:", error);
-    }
+    } catch (error) {}
   };
+
 
   const showEmpresa = async () => {
     const response = await axios.get(
@@ -151,20 +152,17 @@ function Facturacion({ nombre }) {
 
   const manejarCambios = (event) => {
     setNit(event.target.value);
-  }; 
+  };
 
   const manejarBusqueda = async (event) => {
-    
     if (event.key === "Enter") {
-      if(!nit){
+      if (!nit) {
         Swal.fire({
           title: "PARA COMPRA RAPIDA!",
-          html:
-            
-            "</strong>  para compra rapida ingreso el codigo 99 </i>",
+          html: "</strong>  para compra rapida ingreso el codigo 99 </i>",
           icon: "error",
           timer: 3000,
-        })
+        });
         return;
       }
       try {
@@ -206,8 +204,8 @@ function Facturacion({ nombre }) {
 
   const mBusquedaCod = async (event) => {
     if (event.key === "Enter") {
-      if(!codigo){
-        alert("Ingresa el Codigo del Producto")
+      if (!codigo) {
+        alert("Ingresa el Codigo del Producto");
         return;
       }
       try {
@@ -220,25 +218,25 @@ function Facturacion({ nombre }) {
           cantidadRef.current.focus();
         } else {
           Swal.fire({
-            icon: 'error',
-            title: 'Código incorrecto',
-            text: 'El código ingresado no es válido. Verifique e intente de nuevo.',
+            icon: "error",
+            title: "Código incorrecto",
+            text: "El código ingresado no es válido. Verifique e intente de nuevo.",
             timer: 3000,
           });
         }
       } catch (error) {
         if (error.response && error.response.status === 404) {
           Swal.fire({
-            icon: 'error',
-            title: 'Producto no encontrado',
-            text: 'No se encontró ningún producto con el código ingresado.',
+            icon: "error",
+            title: "Producto no encontrado",
+            text: "No se encontró ningún producto con el código ingresado.",
             timer: 3000,
           });
         } else {
           Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Ocurrió un error al buscar el producto. Intente nuevamente.',
+            icon: "error",
+            title: "Error",
+            text: "Ocurrió un error al buscar el producto. Intente nuevamente.",
             timer: 3000,
           });
         }
@@ -255,8 +253,8 @@ function Facturacion({ nombre }) {
 
   const mOpercacionesCan = async (event) => {
     if (event.key === "Enter") {
-      if(!cantidad){
-        alert("Ingresa Una cantidad valida")
+      if (!cantidad) {
+        alert("Ingresa Una cantidad valida");
         return;
       }
       if (cantidad) {
@@ -316,19 +314,25 @@ function Facturacion({ nombre }) {
       // Iterar sobre los productos facturados
       for (const producto of productosFacturados) {
         // Obtener el producto de la base de datos
-        const response = await axios.get(`http://localhost:3000/api/productos/${producto.codigo}`);
+        const response = await axios.get(
+          `http://localhost:3000/api/productos/${producto.codigo}`
+        );
         const productoDB = response.data;
-  
+
         if (!productoDB) {
-          throw new Error(`El producto con código ${producto.codigo} no fue encontrado`);
+          throw new Error(
+            `El producto con código ${producto.codigo} no fue encontrado`
+          );
         }
-  
+
         // Almacenar el producto encontrado en una variable
         const productoEncontrado = productoDB;
-  
+
         // Verificar si hay suficiente stock para realizar la venta
         if (productoEncontrado.stock < producto.cantidad) {
-          console.error(`No se puede vender ${producto.descripcion} porque no hay suficiente en stock`);
+          console.error(
+            `No se puede vender ${producto.descripcion} porque no hay suficiente en stock`
+          );
           Swal.fire({
             title: "Stock insuficiente",
             text: `No se puede vender ${producto.descripcion} porque no hay suficiente en stock`,
@@ -338,123 +342,127 @@ function Facturacion({ nombre }) {
           // Aquí podrías mostrar un mensaje al usuario si lo deseas
           continue; // Continuar con el siguiente producto en el bucle
         }
-  
+
         // Calcular el nuevo stock restando la cantidad facturada del stock actual
-        const nuevoStock = productoEncontrado.stock - parseInt(producto.cantidad);
-  
+        const nuevoStock =
+          productoEncontrado.stock - parseInt(producto.cantidad);
+
         // Hacer la solicitud PUT al backend para actualizar el stock del producto
-        await axios.patch(`http://localhost:3000/api/productos/${productoEncontrado._id}`, {
-          stock: nuevoStock
-        });
-  
-        
+        await axios.patch(
+          `http://localhost:3000/api/productos/${productoEncontrado._id}`,
+          {
+            stock: nuevoStock,
+          }
+        );
       }
     } catch (error) {
       console.error("Error al actualizar el stock:", error);
     }
   };
-  
 
   let productosSinStock = []; // Declaración global de la variable para almacenar los códigos de los productos sin suficiente stock
 
-const verificarStockSuficiente = async () => {
+  const verificarStockSuficiente = async () => {
     try {
-        productosSinStock = []; // Limpiar el arreglo antes de verificar el stock
+      productosSinStock = []; // Limpiar el arreglo antes de verificar el stock
 
-        // Iterar sobre los productos facturados
-        for (const producto of productosFacturados) {
-            const response = await axios.get(`http://localhost:3000/api/productos/${producto.codigo}`);
-            const productoDB = response.data;
+      // Iterar sobre los productos facturados
+      for (const producto of productosFacturados) {
+        const response = await axios.get(
+          `http://localhost:3000/api/productos/${producto.codigo}`
+        );
+        const productoDB = response.data;
 
-            if (!productoDB || producto.cantidad > productoDB.stock) {
-                productosSinStock.push(producto.descripcion); // Agregar el código del producto sin stock al arreglo
-            }
+        if (!productoDB || producto.cantidad > productoDB.stock) {
+          productosSinStock.push(producto.descripcion); // Agregar el código del producto sin stock al arreglo
         }
+      }
 
-        if (productosSinStock.length > 0) {
-            // Mostrar mensaje de advertencia con los códigos de los productos sin stock suficiente
-            Swal.fire({
-                title: "Productos sin stock suficiente",
-                html: `Los siguientes productos no tienen suficiente stock para realizar la venta:<br><br>${productosSinStock.join(', ')}`,
-                icon: "warning",
-                timer: 5000,
-            });
-            return false; // Devolver falso si hay productos sin suficiente stock
-        }
-        
-        return true; // Devolver verdadero si hay suficiente stock para todos los productos
+      if (productosSinStock.length > 0) {
+        // Mostrar mensaje de advertencia con los códigos de los productos sin stock suficiente
+        Swal.fire({
+          title: "Productos sin stock suficiente",
+          html: `Los siguientes productos no tienen suficiente stock para realizar la venta:<br><br>${productosSinStock.join(
+            ", "
+          )}`,
+          icon: "warning",
+          timer: 5000,
+        });
+        return false; // Devolver falso si hay productos sin suficiente stock
+      }
+
+      return true; // Devolver verdadero si hay suficiente stock para todos los productos
     } catch (error) {
-        console.error("Error al verificar el stock:", error);
-        return false; // Devolver falso en caso de error
+      console.error("Error al verificar el stock:", error);
+      return false; // Devolver falso en caso de error
     }
-};
+  };
 
-const verificarCajaAbierta = async () =>{
-  const response = await axios.get('http://localhost:3000/api/caja')
-  const datosCaja = response.data.datosCaja;
+ 
 
-  if(!datosCaja.abierto){
-    Swal.fire({
-      title: "Caja Cerrada",
-      html: "Aun no se a abierto caja, abra un nuevo ciclo de facturacion e intente de nuevo",
-      icon: "warning",
-      timer: 5000,
-  });
-    return false
-  }
-  setIdCaja(datosCaja._id)
-  return true
-}
-
-const actualizarTotal = async () => {
-  try {
-    const response = await axios.get('http://localhost:3000/api/caja')
+  const verificarCajaAbierta = async () => {
+    const response = await axios.get("http://localhost:3000/api/caja");
     const datosCaja = response.data.datosCaja;
 
-    const saldoActual = datosCaja.efectivo
-    const nuevoSaldo = saldoActual + totalFactura
+    if (!datosCaja.abierto) {
+      Swal.fire({
+        title: "Caja Cerrada",
+        html: "Aun no se a abierto caja, abra un nuevo ciclo de facturacion e intente de nuevo",
+        icon: "warning",
+        timer: 5000,
+      });
+      return false;
+    }
+    setIdCaja(datosCaja._id);
+    return true;
+  };
 
-    await axios.patch("http://localhost:3000/api/caja/" + idCaja, {
-      efectivo: nuevoSaldo
-    })
-  } catch (error) {
-    console.log(error)
-  }
-  
-}
+  const actualizarTotal = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/caja");
+      const datosCaja = response.data.datosCaja;
 
+      const saldoActual = datosCaja.efectivo;
+      const nuevoSaldo = saldoActual + totalFactura;
+
+      await axios.patch("http://localhost:3000/api/caja/" + idCaja, {
+        efectivo: nuevoSaldo,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   //SECCION DE METODOS DE LOS BOTONES DE GUARDAR Y OTROS
 
   const guardarFactura = async () => {
     try {
-
       /// Verificar si hay suficiente stock para todos los productos facturados
-        const haySuficienteStock = await verificarStockSuficiente();
+      const haySuficienteStock = await verificarStockSuficiente();
 
-        if (!haySuficienteStock) {
-            const productosSinStockStr = productosSinStock.join(', ');
-            Swal.fire({
-                title: "Productos sin stock suficiente",
-                html: `Los siguientes productos no tienen suficiente stock para realizar la venta:<br><br>${productosSinStockStr}`,
-                icon: "warning",
-                timer: 5000,
-            });
-            return; // Detener la ejecución si no hay suficiente stock
-        }
+      if (!haySuficienteStock) {
+        const productosSinStockStr = productosSinStock.join(", ");
+        Swal.fire({
+          title: "Productos sin stock suficiente",
+          html: `Los siguientes productos no tienen suficiente stock para realizar la venta:<br><br>${productosSinStockStr}`,
+          icon: "warning",
+          timer: 5000,
+        });
+        return; // Detener la ejecución si no hay suficiente stock
+      }
 
-        const cajaAbierta = await verificarCajaAbierta();
+      const cajaAbierta = await verificarCajaAbierta();
 
-        if(!cajaAbierta){
-          Swal.fire({
-            title: "Caja Cerrada",
-            html: "Aun no se a abierto caja, abra un nuevo ciclo de facturacion e intente de nuevo",
-            icon: "warning",
-            timer: 5000,
+      if (!cajaAbierta) {
+        Swal.fire({
+          title: "Caja Cerrada",
+          html: "Aun no se a abierto caja, abra un nuevo ciclo de facturacion e intente de nuevo",
+          icon: "warning",
+          timer: 5000,
         });
         resetValores();
         return;
-        }
+      }
 
       // Construir el objeto de factura con los datos necesarios
       const productosFactura = productosFacturados.map((producto) => ({
@@ -488,7 +496,7 @@ const actualizarTotal = async () => {
       });
 
       // Si la factura se guarda correctamente, actualizar el número de factura
-      await obtenerNumero();
+      await actualizarNumero();
     } catch (error) {
       console.error("Error al guardar la factura:", error);
     }
@@ -514,7 +522,6 @@ const actualizarTotal = async () => {
     try {
       // Crear el documento PDF
       const doc = new jsPDF();
-      
 
       doc.setFontSize(12); // Aumentar el tamaño del texto
 
@@ -633,148 +640,138 @@ const actualizarTotal = async () => {
   //apertura y cierre de caja
 
   const handleAbrirCaja = () => {
-    if( cargoUsuarioActual === 'admin'  ){
-      setInicioCaja(true)
-    }  else {
+    if (cargoUsuarioActual === "admin") {
+      setInicioCaja(true);
+    } else {
       Swal.fire({
         title: "Permiso denegado",
         text: "Para abrir caja debes ser Administrador.",
         icon: "error",
-        timer: 3000
+        timer: 3000,
       });
     }
-      
-  }
-
+  };
 
   const handleCerrarCaja = async () => {
     const cajaAbierta = await verificarCajaAbierta();
-    console.log("La respuesta fue: " +cajaAbierta)
+    console.log("La respuesta fue: " + cajaAbierta);
 
-    if(!cajaAbierta){
+    if (!cajaAbierta) {
       Swal.fire({
         title: "Caja Cerrada",
         html: "Ya se ah cerrado caja",
         icon: "warning",
         timer: 5000,
-    });
-    return;
+      });
+      return;
     }
 
-
-    if( cargoUsuarioActual === 'admin'  ){
-      setCierreCaja(true)
-    }  else {
+    if (cargoUsuarioActual === "admin") {
+      setCierreCaja(true);
+    } else {
       Swal.fire({
         title: "Permiso denegado",
         text: "Para cerrar caja debes ser Administrador.",
         icon: "error",
-        timer: 3000
+        timer: 3000,
       });
     }
-  }
+  };
 
-  const abrirCaja = async ()=> {
+  const abrirCaja = async () => {
     if (!baseAsignada) {
       Swal.fire({
         title: "ALERTA",
         text: "Por favor, ingrese la base asignada.",
         icon: "error",
-        timer: 3000
+        timer: 3000,
       });
-     
+
       return;
     }
     try {
-      const response = await axios.get('http://localhost:3000/api/caja')
+      const response = await axios.get("http://localhost:3000/api/caja");
       const datosCaja = response.data.datosCaja;
-      const id = datosCaja._id
+      const id = datosCaja._id;
       setInicioCaja(false);
 
       if (!datosCaja.abierto) {
         await axios.patch(`http://localhost:3000/api/caja/${id}`, {
-            fecha: fecha,
-            base: baseAsignada,
-            abierto: true
+          fecha: fecha,
+          base: baseAsignada,
+          abierto: true,
         });
 
         Swal.fire({
-            title: "CAJA ABIERTA",
-            text: "La caja se ha abierto correctamente.",
-            icon: "success",
-            timer: 3000
+          title: "CAJA ABIERTA",
+          text: "La caja se ha abierto correctamente.",
+          icon: "success",
+          timer: 3000,
         });
-
-        
-
       } else {
         Swal.fire({
           title: "CAJA NO CERRADA AUN",
           text: "Para abrir caja primero cierre el ciclo anterior.",
           icon: "error",
-          timer: 3000
-        }); 
+          timer: 3000,
+        });
       }
-      
     } catch (error) {
       console.error("Error al abrir caja: ", error);
     }
-  }
+  };
 
   const cerrarCaja = async () => {
-    
     try {
-      const response = await axios.get('http://localhost:3000/api/caja')
+      const response = await axios.get("http://localhost:3000/api/caja");
       const datosCaja = response.data.datosCaja;
       const id = datosCaja._id;
       const efectivo = datosCaja.efectivo;
       const base = datosCaja.base;
 
-      if(datosCaja){
-        setResumen(true)
-        setIdCaja(await id)
-        setEfectivo(await efectivo)
-        setBaseAsignada(await base)
+      if (datosCaja) {
+        setResumen(true);
+        setIdCaja(await id);
+        setEfectivo(await efectivo);
+        setBaseAsignada(await base);
 
         const totalEntregar = efectivo + base;
-        setTotalCierre(totalEntregar)
+        setTotalCierre(totalEntregar);
 
-        const diferencia = contado - await totalEntregar;
-        setDiferencia(diferencia)
+        const diferencia = contado - (await totalEntregar);
+        setDiferencia(diferencia);
       } else {
-        alert('No se obtuvieron datos')
+        alert("No se obtuvieron datos");
       }
-      
     } catch (error) {
       console.error("Error de Conexion al Servidor", error);
 
-      alert("Error de Conexion al Servidor", error)
+      alert("Error de Conexion al Servidor", error);
     }
-
-  }
+  };
 
   const guardarCierre = async () => {
     try {
-      await axios.post('http://localhost:3000/api/registro', {
+      await axios.post("http://localhost:3000/api/registro", {
         fecha: fecha,
         total_ventas: efectivo,
         contado: contado,
-        diferencia: diferencia
-      })
+        diferencia: diferencia,
+      });
       await axios.patch("http://localhost:3000/api/caja/" + idCaja, {
-      abierto: false,
-      base: 0,
-      efectivo: 0,
-      diferencia: 0
-    })
+        abierto: false,
+        base: 0,
+        efectivo: 0,
+        diferencia: 0,
+      });
 
-    setCierreCaja(false);
-    
+      setCierreCaja(false);
+
       Swal.fire({
         title: "Cierre Exitoso",
         text: "El cierre de caja se ha realizado con exito",
         icon: "success",
-        timer: 3000
+        timer: 3000,
       });
     } catch (error) {
       console.error("alerta", error);
@@ -782,15 +779,10 @@ const actualizarTotal = async () => {
         title: "Cierre Exitoso",
         text: "Ingrese El valor del dinero contado en caja incluyendo la base",
         icon: "error",
-        timer: 3000
+        timer: 3000,
       });
-      
     }
-  }
-
-  
-
-  
+  };
 
   return (
     <div className="container principal">
@@ -835,6 +827,8 @@ const actualizarTotal = async () => {
                 readOnly
               />
             </div>
+            {errorNumInicio && <p>{errorNumInicio}</p>}
+
             <div className="form-group">
               <label htmlFor="fechaFactura">Fecha:</label>
               <input
@@ -1008,11 +1002,29 @@ const actualizarTotal = async () => {
         </table>
       </section>
       <div className="seccion-botones">
-        <button className="btn btn-primary" onClick={guardarFactura}>Guardar Factura</button>
-        <button type="button" className="btn btn-secondary" onClick={resetValores}> Cancelar </button>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}> Buscar Factura</button>
-        <button className="btn btn-primary" onClick={handleAbrirCaja}> Abrir Caja</button>
-        <button className="btn btn-primary" onClick={handleCerrarCaja}> Cerrar Caja</button>
+        <button className="btn btn-primary" onClick={guardarFactura}>
+          Guardar Factura
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={resetValores}
+        >
+          {" "}
+          Cancelar{" "}
+        </button>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+          {" "}
+          Buscar Factura
+        </button>
+        <button className="btn btn-primary" onClick={handleAbrirCaja}>
+          {" "}
+          Abrir Caja
+        </button>
+        <button className="btn btn-primary" onClick={handleCerrarCaja}>
+          {" "}
+          Cerrar Caja
+        </button>
       </div>
 
       {/* Modal para mostrar la factura encontrada */}
@@ -1024,7 +1036,11 @@ const actualizarTotal = async () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Factura Encontrada</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal2(false)}></button>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowModal2(false)}
+                ></button>
               </div>
               <div className="modal-body">
                 {/* Integra el componente FacturaTable y pasa la factura encontrada como prop */}
@@ -1056,7 +1072,11 @@ const actualizarTotal = async () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Buscar Factura</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowModal(false)}
+                ></button>
               </div>
               <div className="modal-body">
                 <label htmlFor="buscarNumeroFactura" className="form-label">
@@ -1091,14 +1111,17 @@ const actualizarTotal = async () => {
           </div>
         </div>
       )}
-      {inicioCaja &&(
-        <div  className="modal show" tabIndex="-1" style={{ display: "block" }} >
-          <div className="modal-dialog modal-lg" >
-            <div className="modal-content" >
-              <div className="modal-header" >
+      {inicioCaja && (
+        <div className="modal show" tabIndex="-1" style={{ display: "block" }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
                 <h1 className="modal-title">Abrir Caja</h1>
-                <button type="button" className="btn-close" onClick={() => setInicioCaja(false)}></button>
-                {" "}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setInicioCaja(false)}
+                ></button>{" "}
                 <label htmlFor="fechaAbrir">Fecha:</label>
                 <input
                   type="Date"
@@ -1109,61 +1132,134 @@ const actualizarTotal = async () => {
                   readOnly
                 />
               </div>
-              <div className="modal-body" >
+              <div className="modal-body">
                 <h5>Ingrese la Base Asignada</h5>
-                <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" id="baseAsignada" name="baseAsignada"  value={baseAsignada}
-                onChange={(e) => setBaseAsignada(e.target.value)} required />
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Ingrese el Valor sin puntos ni comas"
+                  id="baseAsignada"
+                  name="baseAsignada"
+                  value={baseAsignada}
+                  onChange={(e) => setBaseAsignada(e.target.value)}
+                  required
+                />
               </div>
-              <button type="button" className="btn btn-primary" onClick={abrirCaja}>Abrir Caja</button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={abrirCaja}
+              >
+                Abrir Caja
+              </button>
             </div>
           </div>
-
         </div>
       )}
 
-     {cierreCaja && (
+      {cierreCaja && (
         <div className="modal show" tabIndex="-1" style={{ display: "block" }}>
-            <div className="modal-dialog modal-lg">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h1 className="modal-title">Cierre de Caja Diario</h1>
-                        <button type="button" className="btn-close" onClick={() => setCierreCaja(false)}></button>
-                    </div>
-                    <div className="modal-body">
-                        <h5>Ingrese El valor del dinero contado en caja incluyendo la base</h5>
-                        <input type="number" className="form-control" placeholder="Ingrese el Valor sin puntos ni comas" id="contado" name="valorContado" value={contado} onChange={(e) => setContado(e.target.value)} />
-                        <button type="button" className="btn btn-primary" onClick={cerrarCaja}>Generar</button>
-                        {resumen && (
-                            <div>
-                                <label htmlFor="efectivo">Total Efectivo: </label>
-                                <input type="number" className="form-control" id="efectivo" name="efectivo" value={efectivo} readOnly />
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h1 className="modal-title">Cierre de Caja Diario</h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setCierreCaja(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <h5>
+                  Ingrese El valor del dinero contado en caja incluyendo la base
+                </h5>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Ingrese el Valor sin puntos ni comas"
+                  id="contado"
+                  name="valorContado"
+                  value={contado}
+                  onChange={(e) => setContado(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={cerrarCaja}
+                >
+                  Generar
+                </button>
+                {resumen && (
+                  <div>
+                    <label htmlFor="efectivo">Total Efectivo: </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      id="efectivo"
+                      name="efectivo"
+                      value={efectivo}
+                      readOnly
+                    />
 
-                                <label htmlFor="baseCaja">Base asignada: </label>
-                                <input type="number" className="form-control" id="baseCaja" name="baseCaja" value={baseAsignada} readOnly />
+                    <label htmlFor="baseCaja">Base asignada: </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      id="baseCaja"
+                      name="baseCaja"
+                      value={baseAsignada}
+                      readOnly
+                    />
 
-                                <label htmlFor="totalCaja">Total a entregar: </label>
-                                <input type="number" className="form-control" id="totalCaja" name="totalCaja" value={totalCierre} readOnly />
+                    <label htmlFor="totalCaja">Total a entregar: </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      id="totalCaja"
+                      name="totalCaja"
+                      value={totalCierre}
+                      readOnly
+                    />
 
-                                <label htmlFor="totalContado">Total contado: </label>
-                                <input type="number" className="form-control" id="totalContado" name="totalContado" value={contado} readOnly />
+                    <label htmlFor="totalContado">Total contado: </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      id="totalContado"
+                      name="totalContado"
+                      value={contado}
+                      readOnly
+                    />
 
-                                <label htmlFor="diferencia">Diferencia: </label>
-                                <input 
-                                    type="number" 
-                                    className={`form-control ${diferencia < 0 ? 'red-background' : diferencia > 0 ? 'yellow-background' : ''}`} 
-                                    id="diferencia" 
-                                    name="diferencia" 
-                                    value={diferencia} 
-                                    readOnly 
-                                />
-                                <button type="button" className="btn btn-primary" onClick={guardarCierre}>Guardar</button>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                    <label htmlFor="diferencia">Diferencia: </label>
+                    <input
+                      type="number"
+                      className={`form-control ${
+                        diferencia < 0
+                          ? "red-background"
+                          : diferencia > 0
+                          ? "yellow-background"
+                          : ""
+                      }`}
+                      id="diferencia"
+                      name="diferencia"
+                      value={diferencia}
+                      readOnly
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={guardarCierre}
+                    >
+                      Guardar
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
+          </div>
         </div>
-    )}
+      )}
     </div>
   );
 }

@@ -13,7 +13,7 @@ const productoSchema = new Schema({
 });
 
 const facturaSchema = new Schema({
-    numeroFactura: { type: String, required: true },
+    numeroFactura: { type: String, required: true, default: 0},
     cliente: {
         type: Schema.Types.ObjectId,
         ref: 'Cliente', // Referencia al modelo de Cliente
